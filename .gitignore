@@ -6,7 +6,6 @@ build
 coverage
 .DS_Store
 *.log
-prisma/migrations
 prisma/dev.db
 prisma/dev.db-journal
 *.sqlite

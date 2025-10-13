@@ -2,6 +2,7 @@
   "name": "propertyapp",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
@@ -20,16 +21,21 @@
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
     "@prisma/client": "^6.17.0",
+    "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
+    "feather-icons": "^4.29.2",
     "jsonwebtoken": "^9.0.2",
     "next": "^15.5.4",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-feather": "^2.0.10",
+    "react-icons": "^5.5.0",
+    "three": "^0.180.0",
+    "vanta": "^0.5.24"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
-    "prisma": "^6.17.0",
-    "tailwindcss": "^4.1.14"
+    "prisma": "^6.17.0"
   }
 }
