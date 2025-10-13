@@ -1,13 +1,27 @@
-// SearchBar component: For searching and filtering properties
+import "../styles/searchbar.css"
+
 export default function SearchBar() {
-  // TODO: Implement search and filter logic
+
   return (
-    <div className="mb-6">
-      <input
-        type="text"
-        placeholder="Search properties..."
-        className="border rounded px-12 py-2 w-full"
-      />
+    <div className="searchForm">
+      <div className="searchInputWrapper">
+        <input
+          type="text"
+          className="searchInput"
+          placeholder="Search by location, project, or landmark"
+        />
+        <i data-feather="map-pin" className="searchIcon" fill="none" stroke="currentColor"> </i>
+        <select className="searchSelect">
+          <option>Buy</option>
+          <option>Rent</option>
+          <option>Commercial</option>
+        </select>
+        <button className="searchButton">Search</button>
+      </div>
+      <div className="popularSearches">
+        <span className="popularLabel">Popular searches:</span>
+        Mumbai • Bangalore • Delhi • Pune • Hyderabad
+      </div>
     </div>
   );
 }
