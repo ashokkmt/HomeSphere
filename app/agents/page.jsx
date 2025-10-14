@@ -369,7 +369,7 @@ export default function FindAgents() {
                 {/* Why Choose */}
                 <section className="faWhy">
                     <div className="faWhyInner">
-                        <h2>Why Choose NestQuest Agents</h2>
+                        <h2>Why Choose HomeSphere Agents</h2>
                         <p>Our agents are carefully vetted professionals who provide exceptional service and local market expertise</p>
 
                         <div className="faWhyGrid">

@@ -44,7 +44,7 @@ export default function Navbar() {
           <div className="navLeft">
             <div className="logo">
               <i data-feather="home" className="logoIcon" ></i>
-              <span className="logoText">NestQuest</span>
+              <span className="logoText">HomeSphere</span>
             </div>
             <div className="navLinks">
               <Link onClick={(e) => {

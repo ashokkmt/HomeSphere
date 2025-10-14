@@ -51,7 +51,7 @@ export default function Footer() {
             <a href="#"><i data-feather="twitter" ></i></a>
             <a href="#"><i data-feather="linkedin" fill="none"></i></a>
           </div>
-          <p className="copyright">© 2023 NestQuest, Inc. All rights reserved.</p>
+          <p className="copyright">© 2025 HomeSphere, Inc. All rights reserved.</p>
         </div>
       </div>
     </footer>
