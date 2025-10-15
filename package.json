@@ -24,6 +24,7 @@
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "feather-icons": "^4.29.2",
+    "graphql": "^16.11.0",
     "jsonwebtoken": "^9.0.2",
     "next": "^15.5.4",
     "react": "^19.2.0",
