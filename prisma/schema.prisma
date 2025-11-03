@@ -7,35 +7,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User table (both buyers & agents use this base table)
 model User {
-  id         Int       @id @default(autoincrement())
-  email      String    @unique
-  password   String
-  fullName   String?
-  phone      String?
-  role       Role      @default(BUYER)
-  createdAt  DateTime  @default(now())
-  inquiries  Inquiry[] @relation("buyer_inquiries")
-  favorites  Favorite[]
-  agent      Agent?
+  id        Int        @id @default(autoincrement())
+  password  String
+  createdAt DateTime   @default(now())
+  email     String     @unique
+  fullName  String?
+  phone     String?
+  role      Role       @default(BUYER)
+  agent     Agent?
+  favorites Favorite[]
+  inquiries Inquiry[]  @relation("buyer_inquiries")
 }
 
-// Agent details (extends User)
 model Agent {
-  id        Int     @id @default(autoincrement())
-  userId    Int     @unique
-  user      User    @relation(fields: [userId], references: [id])
-  agency    String?
-  licenseNo String?
+  id         Int        @id @default(autoincrement())
+  userId     Int        @unique
+  agency     String?
+  licenseNo  String?
+  user       User       @relation(fields: [userId], references: [id])
   properties Property[]
 }
 
-// Property details
 model Property {
-  id            Int       @id @default(autoincrement())
+  id            Int               @id @default(autoincrement())
   agentId       Int
-  agent         Agent     @relation(fields: [agentId], references: [id])
   title         String
   description   String?
   price         Float
@@ -43,21 +39,20 @@ model Property {
   bedrooms      Int?
   bathrooms     Int?
   areaSqft      Int?
-  listingStatus String    @default("active")
+  listingStatus String            @default("active")
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
   address       Address?
-  images        PropertyImage[]
-  amenities     PropertyAmenity[]
-  inquiries     Inquiry[]
   favorites     Favorite[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  inquiries     Inquiry[]
+  agent         Agent             @relation(fields: [agentId], references: [id])
+  amenities     PropertyAmenity[]
+  images        PropertyImage[]
 }
 
-// Address (one-to-one with property)
 model Address {
   id         Int      @id @default(autoincrement())
   propertyId Int      @unique
-  property   Property @relation(fields: [propertyId], references: [id])
   street     String?
   city       String?
   state      String?
@@ -65,61 +60,57 @@ model Address {
   country    String?
   latitude   Float?
   longitude  Float?
+  property   Property @relation(fields: [propertyId], references: [id])
 }
 
-// Property images
 model PropertyImage {
   id         Int      @id @default(autoincrement())
   propertyId Int
-  property   Property @relation(fields: [propertyId], references: [id])
   url        String
   altText    String?
   sortOrder  Int      @default(0)
+  property   Property @relation(fields: [propertyId], references: [id])
 }
 
-// Amenities (pool, gym, etc.)
 model Amenity {
-  id         Int              @id @default(autoincrement())
-  name       String           @unique
+  id         Int               @id @default(autoincrement())
+  name       String            @unique
   properties PropertyAmenity[]
 }
 
-// Junction table for many-to-many (Property ↔ Amenity)
 model PropertyAmenity {
   propertyId Int
   amenityId  Int
-  property   Property @relation(fields: [propertyId], references: [id])
   amenity    Amenity  @relation(fields: [amenityId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id])
+
   @@id([propertyId, amenityId])
 }
 
-// Inquiry by buyer
 model Inquiry {
-  id          Int      @id @default(autoincrement())
-  propertyId  Int
-  buyerId     Int?
-  message     String?
+  id           Int      @id @default(autoincrement())
+  propertyId   Int
+  buyerId      Int?
+  message      String?
   contactPhone String?
-  status      String   @default("new")
-  createdAt   DateTime @default(now())
-  property    Property @relation(fields: [propertyId], references: [id])
-  buyer       User?    @relation("buyer_inquiries", fields: [buyerId], references: [id])
+  status       String   @default("new")
+  createdAt    DateTime @default(now())
+  buyer        User?    @relation("buyer_inquiries", fields: [buyerId], references: [id])
+  property     Property @relation(fields: [propertyId], references: [id])
 }
 
-// Favorites (buyer saves property)
 model Favorite {
   userId     Int
   propertyId Int
   savedAt    DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id])
   property   Property @relation(fields: [propertyId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
   @@id([userId, propertyId])
 }
 
-// Enums
 enum Role {
   BUYER
   AGENT
   ADMIN
 }
-
