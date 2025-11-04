@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { graphql } from "graphql";
-import schema from "../../../lib/graphql/schema";
+import schema from "@/lib/graphql/schema";
 
 export async function POST(req) {
   const body = await req.json();
