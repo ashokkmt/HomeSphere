@@ -7,24 +7,14 @@ async function testGraphQL() {
     try {
         // --- GraphQL query ---
         const query = `            
-            mutation CreateProperty {
-                createUser(
-                    input: {
-                        email: "123@123.com"
-                        password: "123"
-                        fullName: "ashok k"
-                        phone: "123"
-                        role: ADMIN
-                    }
-                ) {
-                    id
-                    email
-                    fullName
-                    phone
-                    role
-                    createdAt
-                }
-            }
+            query GetAllAgents {
+    getAllAgents {
+        userId
+        agency
+        licenseNo
+    }
+}
+
         `;
 
         // --- Send POST request ---
