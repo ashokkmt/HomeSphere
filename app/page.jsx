@@ -3,7 +3,7 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import feather from 'feather-icons'
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import '../styles/homepage.css';
 import SearchBar from '../components/SearchBar';
 import Link from 'next/link';
@@ -11,59 +11,60 @@ import { useRouter } from 'next/navigation';
 import PropertyCard from '../components/PropertyCard';
 import LocalityCard from '../components/LocalityCard';
 import Testimonials from '../components/Testimonials';
-
+import { PropertyContext } from './propertyContext.jsx'
 
 export default function NestQuest() {
   const router = useRouter();
+  const { allProperties } = useContext(PropertyContext);
 
   useEffect(() => {
     feather.replace();
   }, []);
 
-  const properties = [
-    {
-      id: 1,
-      title: 'Luxury Villa in Bangalore',
-      location: 'Whitefield, Bangalore',
-      price: '₹1.2 Cr',
-      pricePerSqFt: '₹8,500/sq.ft',
-      area: '1,400 sq.ft',
-      bhk: '3 BHK',
-      status: 'Ready to Move',
-      featured: true,
-      agent: 'John Properties',
-      image: 'http://static.photos/real-estate/640x360/1',
-      agentImage: 'http://static.photos/people/200x200/2'
-    },
-    {
-      id: 2,
-      title: 'Modern Apartment in Mumbai',
-      location: 'Bandra West, Mumbai',
-      price: '₹2.5 Cr',
-      pricePerSqFt: '₹15,000/sq.ft',
-      area: '1,650 sq.ft',
-      bhk: '2 BHK',
-      status: 'Under Construction',
-      featured: false,
-      agent: 'Elite Realtors',
-      image: 'http://static.photos/real-estate/640x360/2',
-      agentImage: 'http://static.photos/people/200x200/3'
-    },
-    {
-      id: 3,
-      title: 'Premium Villa in Goa',
-      location: 'Candolim, Goa',
-      price: '₹3.8 Cr',
-      pricePerSqFt: '₹6,500/sq.ft',
-      area: '5,800 sq.ft',
-      bhk: '4 BHK',
-      status: 'Ready to Move',
-      featured: false,
-      agent: 'Sunshine Properties',
-      image: 'http://static.photos/real-estate/640x360/3',
-      agentImage: 'http://static.photos/people/200x200/4'
-    }
-  ];
+  // const properties = [
+  //   {
+  //     id: 1,
+  //     title: 'Luxury Villa in Bangalore',
+  //     location: 'Whitefield, Bangalore',
+  //     price: '₹1.2 Cr',
+  //     pricePerSqFt: '₹8,500/sq.ft',
+  //     area: '1,400 sq.ft',
+  //     bhk: '3 BHK',
+  //     status: 'Ready to Move',
+  //     featured: true,
+  //     agent: 'John Properties',
+  //     image: 'http://static.photos/real-estate/640x360/1',
+  //     agentImage: 'http://static.photos/people/200x200/2'
+  //   },
+  //   {
+  //     id: 2,
+  //     title: 'Modern Apartment in Mumbai',
+  //     location: 'Bandra West, Mumbai',
+  //     price: '₹2.5 Cr',
+  //     pricePerSqFt: '₹15,000/sq.ft',
+  //     area: '1,650 sq.ft',
+  //     bhk: '2 BHK',
+  //     status: 'Under Construction',
+  //     featured: false,
+  //     agent: 'Elite Realtors',
+  //     image: 'http://static.photos/real-estate/640x360/2',
+  //     agentImage: 'http://static.photos/people/200x200/3'
+  //   },
+  //   {
+  //     id: 3,
+  //     title: 'Premium Villa in Goa',
+  //     location: 'Candolim, Goa',
+  //     price: '₹3.8 Cr',
+  //     pricePerSqFt: '₹6,500/sq.ft',
+  //     area: '5,800 sq.ft',
+  //     bhk: '4 BHK',
+  //     status: 'Ready to Move',
+  //     featured: false,
+  //     agent: 'Sunshine Properties',
+  //     image: 'http://static.photos/real-estate/640x360/3',
+  //     agentImage: 'http://static.photos/people/200x200/4'
+  //   }
+  // ];
 
   const localities = [
     { name: 'Bandra West', avgPrice: '₹25,000/sq.ft', properties: '248+', image: 'http://static.photos/cityscape/640x360/1' },
@@ -113,12 +114,15 @@ export default function NestQuest() {
           </div>
           <div className="propertyGrid">
             {
-              properties.map((property, index) => (
-                <PropertyCard
-                  index={index}
-                  property={property}
-                />
-              ))
+              allProperties.map((property, index) => {
+                if (index >= 3) return;
+                return (
+                  <PropertyCard
+                    index={index}
+                    property={property}
+                  />
+                )
+              })
             }
           </div>
         </div>

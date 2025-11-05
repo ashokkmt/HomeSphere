@@ -3,65 +3,144 @@
 import Navbar from "../../../components/Navbar.jsx";
 import Footer from "../../../components/Footer";
 import Head from 'next/head';
-import { Activity, Tool, Briefcase, Calendar, Camera, CheckCircle, ChevronLeft, ChevronRight, Clock, Compass, Droplet, Heart, Home, Layers, Mail, MapPin, MessageSquare, Phone, Share2, Shield, Sidebar, Square, Sun, Tv, Wifi, Wind } from 'react-feather';
+import { Briefcase, Calendar, Camera, CheckCircle, ChevronLeft, ChevronRight, Clock, Compass, Droplet, Heart, Home, Layers, Mail, MapPin, MessageSquare, Phone, Share2, Square } from 'react-feather';
 import '../../../styles/property.id.css';
 import feather from 'feather-icons'
-import { useEffect } from 'react';
-import PropertyCard from '../../../components/PropertyCard';
+import { useContext, useEffect, useRef, useState } from 'react';
+import PropertyCard from '../../../components/PropertyCard.jsx';
+import { PropertyContext } from "@/app/propertyContext.jsx";
+import { useParams } from "next/navigation.js";
+import axios from "axios";
+import { MapIcons } from "@/components/utils/iconMap.js";
 
 
 function PropertyDetail() {
+
+  const [currproperty, setCurrproperty] = useState({})
+  const [currAgent, setCurrAgent] = useState({})
+  const { allProperties } = useContext(PropertyContext);
+  const { id } = useParams();
+  const slideImage = useRef(null);
+
+
+  useEffect(() => {
+    async function fetchcurrpropertydetail() {
+
+      const query = `query GetPropertyById {
+          getPropertyById(id: ${id}) {
+              id
+              agentId
+              title
+              description
+              price
+              propertyType
+              bedrooms
+              bathrooms
+              areaSqft
+              listingStatus
+              createdAt
+              updatedAt
+              images {
+                  propertyId
+                  url
+                  altText
+                  sortOrder
+              }
+              address {
+                  city
+                  state
+                  street
+                  postalCode
+              }
+              amenities {
+                  amenity {
+                      id
+                      name
+                  }
+              }
+          }
+        }`
+
+      const res = await axios.post("http://localhost:3000/api/graphql", { query });
+      setCurrproperty(res.data.data.getPropertyById);
+
+
+      if (res?.data?.data?.getPropertyById?.agentId) {
+        const agentQuery = `query GetAgentById {
+          getAgentById(id: 1) {
+            id
+            userId
+            agency
+            licenseNo
+            user {
+              id
+              email
+              fullName
+              phone
+              role
+            }
+          }
+        }`
+        const agentDetail = await axios.post("http://localhost:3000/api/graphql", { query: agentQuery });
+        setCurrAgent(agentDetail?.data?.data?.getAgentById)
+      }
+    }
+
+    fetchcurrpropertydetail();
+  }, [])
+
 
   useEffect(() => {
     feather.replace();
   }, []);
 
 
-  const properties = [
-    {
-      id: 1,
-      title: 'Luxury Villa in Bangalore',
-      location: 'Whitefield, Bangalore',
-      price: '₹1.2 Cr',
-      pricePerSqFt: '₹8,500/sq.ft',
-      area: '1,400 sq.ft',
-      bhk: '3 BHK',
-      status: 'Ready to Move',
-      featured: true,
-      agent: 'John Properties',
-      image: 'http://static.photos/real-estate/640x360/1',
-      agentImage: 'http://static.photos/people/200x200/2'
-    },
-    {
-      id: 2,
-      title: 'Modern Apartment in Mumbai',
-      location: 'Bandra West, Mumbai',
-      price: '₹2.5 Cr',
-      pricePerSqFt: '₹15,000/sq.ft',
-      area: '1,650 sq.ft',
-      bhk: '2 BHK',
-      status: 'Under Construction',
-      featured: false,
-      agent: 'Elite Realtors',
-      image: 'http://static.photos/real-estate/640x360/2',
-      agentImage: 'http://static.photos/people/200x200/3'
-    },
-    {
-      id: 3,
-      title: 'Premium Villa in Goa',
-      location: 'Candolim, Goa',
-      price: '₹3.8 Cr',
-      pricePerSqFt: '₹6,500/sq.ft',
-      area: '5,800 sq.ft',
-      bhk: '4 BHK',
-      status: 'Ready to Move',
-      featured: false,
-      agent: 'Sunshine Properties',
-      image: 'http://static.photos/real-estate/640x360/3',
-      agentImage: 'http://static.photos/people/200x200/4'
-    }
-  ];
 
+  function CountNumberofAvialable(city) {
+    let count = 0;
+    allProperties.forEach((property) => {
+      const propCity = property?.address?.city;
+      if (propCity && city && propCity.toLowerCase() === city.toLowerCase()) {
+        count++;
+      }
+    });
+    return count;
+  }
+
+
+
+  function formatIndianNumber(num) {
+    if (num >= 10000000) {
+      // 1 Crore = 1,00,00,000
+      return "₹" + (num / 10000000).toFixed(2).replace(/\.00$/, '') + 'Cr';
+    } else if (num >= 100000) {
+      // 1 Lakh = 1,00,000
+      return "₹" + (num / 100000).toFixed(2).replace(/\.00$/, '') + 'L';
+    } else if (num >= 1000) {
+      return "₹" + (num / 1000).toFixed(2).replace(/\.00$/, '') + 'K';
+    } else {
+      return "₹" + num;
+    }
+  }
+
+
+  const scrollLeft = () => {
+    if (slideImage.current) {
+      slideImage.current.scrollBy({
+        left: -slideImage.current.offsetWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollRight = () => {
+    if (slideImage.current) {
+      slideImage.current.scrollBy({
+        left: slideImage.current.offsetWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
 
 
   return (
@@ -81,13 +160,13 @@ function PropertyDetail() {
               <div className="pq-breadcrumb">
                 <a>Home</a>
                 <ChevronRight className="pq-chev" />
-                <a>Bangalore</a>
+                <a>{currproperty.address?.city}</a>
                 <ChevronRight className="pq-chev" />
-                <span className="pq-current">Luxury Villa in Whitefield</span>
+                <span className="pq-current">{currproperty?.propertyType}</span>
               </div>
 
-              <h1 className="pq-title">Luxury 3 BHK Villa in Prestige Lakeside Habitat</h1>
-              <p className="pq-location"><MapPin className="pq-icon-small" /> Whitefield, Bangalore</p>
+              <h1 className="pq-title">{currproperty?.title}</h1>
+              <p className="pq-location"><MapPin className="pq-icon-small" /> {currproperty.address?.city}, {currproperty.address?.state}</p>
             </div>
 
             <div className="pq-header-actions">
@@ -102,23 +181,30 @@ function PropertyDetail() {
         <main className="pq-container">
           <section className="pq-gallery-row">
             <div className="pq-main-gallery">
-              <div className="pq-property-gallery">
-                <img src="http://static.photos/real-estate/1200x630/1" alt="Property main" />
-                <div className="pq-photo-count"><Camera /> 24 Photos</div>
-                <button className="pq-gallery-nav-left"><ChevronLeft /></button>
-                <button className="pq-gallery-nav-right"><ChevronRight /></button>
+              <div className="pq-property-gallery" ref={slideImage}>
+
+                {
+                  currproperty?.images?.map((img, index) => {
+                    return (
+                      <img src={img?.url} alt={img?.altText} />
+                    )
+                  })
+                }
+                <div className="pq-photo-count"><Camera /> {currproperty?.images?.length} Photos</div>
+                <button onClick={() => scrollLeft()} className="pq-gallery-nav-left"><ChevronLeft /></button>
+                <button onClick={() => scrollRight()} className="pq-gallery-nav-right"><ChevronRight /></button>
               </div>
             </div>
 
-            <aside className="pq-thumb-grid">
-              <div className="pq-thumb"><img src="http://static.photos/real-estate/640x360/2" alt="thumb" /></div>
-              <div className="pq-thumb"><img src="http://static.photos/real-estate/640x360/3" alt="thumb" /></div>
-              <div className="pq-thumb"><img src="http://static.photos/real-estate/640x360/4" alt="thumb" /></div>
+            {/* <aside className="pq-thumb-grid">
+              <div className="pq-thumb"> <img src={currproperty?.images?.[0]?.url} alt={currproperty?.images?.[1]?.altText} /></div>
+              <div className="pq-thumb"> <img src={currproperty?.images?.[0]?.url} alt={currproperty?.images?.[1]?.altText} /></div>
+              <div className="pq-thumb"> <img src={currproperty?.images?.[0]?.url} alt={currproperty?.images?.[1]?.altText} /></div>
               <div className={`pq-thumb pq-more-thumb`}>
                 <img height={"100%"} src="http://static.photos/real-estate/640x360/5" alt="thumb" />
                 <div className="pq-more-overlay">+20 more</div>
               </div>
-            </aside>
+            </aside> */}
           </section>
 
           {/* Details + Sidebar */}
@@ -127,8 +213,8 @@ function PropertyDetail() {
               <div className="pq-card">
                 <div className="pq-card-header">
                   <div>
-                    <h2 className="pq-price">₹1.2 Crore</h2>
-                    <p className="pq-price-sub">₹8,500/sq.ft</p>
+                    <h2 className="pq-price">{formatIndianNumber(currproperty?.price)}</h2>
+                    <p className="pq-price-sub">₹{currproperty?.areaSqft}/sq.ft</p>
                   </div>
 
                   <div className="pq-rating">
@@ -146,16 +232,19 @@ function PropertyDetail() {
 
                 <div className="pq-section">
                   <h3>Overview</h3>
-                  <p className="pq-text">This luxurious 3 BHK villa is located in the prestigious Prestige Lakeside Habitat community in Whitefield, Bangalore. The property boasts of elegant interiors, premium finishes, and breathtaking views of the central lake. Spread over 1,400 sq.ft of built-up area, this villa offers spacious living with modern amenities.</p>
+                  {/* yaha pe normal chota sa description ayega OK */}
+                  <p className="pq-text">{currproperty?.description}</p>
                 </div>
 
                 <div className="pq-section">
                   <h3>Key Features</h3>
                   <div className="pq-features-grid">
-                    <div className="pq-feature"><Home /> 3 Bedrooms</div>
-                    <div className="pq-feature"><Droplet /> 3 Bathrooms</div>
-                    <div className="pq-feature"><Square /> 1,400 sq.ft Built-up</div>
-                    <div className="pq-feature"><Calendar /> Ready to Move</div>
+                    <div className="pq-feature"><Home /> {currproperty?.bedrooms} Bedrooms</div>
+                    <div className="pq-feature"><Droplet /> {currproperty?.bathrooms} Bathrooms</div>
+                    <div className="pq-feature"><Square /> {parseInt(currproperty?.price / currproperty?.areaSqft)} sq.ft Built-up</div>
+                    <div className="pq-feature"><Calendar /> {currproperty?.listingStatus}</div>
+
+                    {/* Yaha Compass aur Layers wale mai kya dalna hai dekh lena ye DB mai nhi hai ok */}
                     <div className="pq-feature"><Compass /> North-East Facing</div>
                     <div className="pq-feature"><Layers /> 3rd Floor (of 4)</div>
                   </div>
@@ -164,14 +253,18 @@ function PropertyDetail() {
                 <div className="pq-section">
                   <h3>Amenities</h3>
                   <div className="pq-amenities-grid">
-                    <div className="pq-amenity"><Wifi /> <span>Wi-Fi</span></div>
-                    <div className="pq-amenity"><Sun /> <span>Swimming Pool</span></div>
-                    <div className="pq-amenity"><Shield /> <span>Security</span></div>
-                    <div className="pq-amenity"><Activity /> <span>Gym</span></div>
-                    <div className="pq-amenity"><Tool /> <span>Garden</span></div>
-                    <div className="pq-amenity"><Tv /> <span>Cable TV</span></div>
-                    <div className="pq-amenity"><Sidebar /> <span>Parking</span></div>
-                    <div className="pq-amenity"><Wind /> <span>AC</span></div>
+                    {
+                      currproperty?.amenities?.map((amenity) => {
+                        const name = amenity?.amenity?.name || "";
+                        const key = name.replace(/[\s_-]/g, '').toLowerCase();
+                        const MapValue = MapIcons[key] || MapIcons.default;
+                        return (
+                          <>
+                            <div className="pq-amenity"><MapValue.icon size={MapValue.size} /> <span>{amenity?.amenity?.name}</span></div>
+                          </>
+                        )
+                      })
+                    }
                   </div>
                 </div>
 
@@ -187,18 +280,18 @@ function PropertyDetail() {
                 <div className="pq-section">
                   <h3>Detailed Description</h3>
                   <div className="pq-text-block">
-                    <p>This exquisite 3 BHK villa is part of the prestigious Prestige Lakeside Habitat, a gated community in the heart of Whitefield, Bangalore. The property offers a perfect blend of luxury and comfort with its elegant interiors and premium finishes.</p>
-                    <p>The villa features a spacious living room with large windows that allow ample natural light, a modern kitchen with modular fittings, three well-appointed bedrooms with attached bathrooms, and a utility area. The master bedroom comes with a walk-in closet.</p>
-                    <p>Residents of Prestige Lakeside Habitat enjoy access to world-class amenities including a swimming pool, gymnasium, clubhouse, children's play area, landscaped gardens, and 24/7 security. The community also has a convenience store and ample visitor parking.</p>
-                    <p>The location offers excellent connectivity to major IT parks, schools, hospitals, and shopping centers. The Whitefield metro station is just 1.5 km away, and the ITPL Tech Park is within 3 km.</p>
+                    {/* yaha pe detailed description ayega OK */}
+                    <p>{currproperty?.description}</p>
+                    <p>{currproperty?.description}</p>
                   </div>
                 </div>
 
                 <div className="pq-section">
                   <h3>Location</h3>
                   <div className="pq-map-container"><img src="http://static.photos/technology/640x360/6" alt="map" /></div>
-                  <p className="pq-text"><strong>Address:</strong> Prestige Lakeside Habitat, Whitefield Main Road, Bangalore - 560066</p>
-                  <p className="pq-text"><strong>Landmarks:</strong> 1.2 km from Phoenix Marketcity, 2 km from ITPL, 1.5 km from Whitefield Metro Station</p>
+                  <p className="pq-text"><strong>Address:</strong> {currproperty?.address?.street}, {currproperty?.address?.city}, {currproperty?.address?.state}, {currproperty?.address?.postalCode} </p>
+                  {/* Yaha neehce wale me landmark ayega jo abhi DB mai nhi hai OK */}
+                  <p className="pq-text"><strong>Landmarks:</strong> {currproperty?.address?.street}</p>
                 </div>
 
               </div>
@@ -210,7 +303,7 @@ function PropertyDetail() {
                 <div className="pq-agent-head">
                   <img src="http://static.photos/people/200x200/8" alt="Agent" />
                   <div>
-                    <h4>Rahul Sharma</h4>
+                    <h4>{currAgent?.user?.fullName}</h4>
                     <p className="pq-small">Property Agent</p>
                     <div className="pq-stars-small">
                       {
@@ -224,8 +317,8 @@ function PropertyDetail() {
                 </div>
 
                 <div className="pq-agent-info">
-                  <div><Briefcase /> Elite Realtors</div>
-                  <div><Clock /> Available 9AM - 7PM</div>
+                  <div><Briefcase /> {currAgent?.agency}</div>
+                  <div><Clock /> Licence No. {currAgent?.licenseNo}</div>
                   <div><CheckCircle /> Verified Agent</div>
                 </div>
 
@@ -255,13 +348,13 @@ function PropertyDetail() {
               </div>
 
               <div className="pq-card">
-                <h4>Price Trends in Whitefield</h4>
+                <h4>Price Trends in {currproperty?.address?.city}</h4>
                 <div className="pq-price-box">
-                  <div><span>Avg. Price/sq.ft</span><strong>₹8,500</strong></div>
+                  <div><span>Avg. Price/sq.ft</span><strong>₹{parseInt(currproperty?.price / currproperty?.areaSqft)}</strong></div>
                   <div><span>Price Change (1Y)</span><strong className="pq-positive">+8.2%</strong></div>
-                  <div><span>Properties Available</span><strong>142</strong></div>
+                  <div><span>Properties Available</span><strong>{CountNumberofAvialable(currproperty?.address?.city)}</strong></div>
                 </div>
-                <p className="pq-small">Property prices in Whitefield have increased by 8.2% over the last year. The average price per square foot for apartments in this locality is ₹8,500.</p>
+                <p className="pq-small">Property prices in {currproperty?.address?.city} have increased by 8.2% over the last year. The average price per square foot for apartments in this locality is ₹{parseInt(currproperty?.price / currproperty?.areaSqft)}.</p>
               </div>
             </aside>
           </section>
@@ -271,12 +364,15 @@ function PropertyDetail() {
             <h2>Similar Properties</h2>
             <div className="pq-similar-grid">
               {
-                properties.map((property, index) => (
-                  <PropertyCard
-                    index={index}
-                    property={property}
-                  />
-                ))
+                allProperties.filter(property => property.id != id).map((property, index) => {
+                  if (index >= 3) return;
+                  return (
+                    <PropertyCard
+                      index={index}
+                      property={property}
+                    />
+                  )
+                })
               }
             </div>
           </section>

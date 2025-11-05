@@ -18,13 +18,29 @@ export default function PropertyCard({ property, index }) {
     router.push(`/property/${id}`)
   }
 
+
+  function formatIndianNumber(num) {
+    if (num >= 10000000) {
+      // 1 Crore = 1,00,00,000
+      return (num / 10000000).toFixed(2).replace(/\.00$/, '') + 'Cr';
+    } else if (num >= 100000) {
+      // 1 Lakh = 1,00,000
+      return (num / 100000).toFixed(2).replace(/\.00$/, '') + 'L';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(2).replace(/\.00$/, '') + 'K';
+    } else {
+      return num.toString();
+    }
+  }
+
+
   return (
     <div key={index} className="propertyCard">
       <div className="propertyImageWrapper">
-        <img src={property.image} alt={property.title} className="propertyImage" />
-        {property.featured && (
+        <img src={property.images[0].url} alt={property.images[0].altText} className="propertyImage" />
+        {/* {property.featured && (
           <div className="featuredBadge">Featured</div>
-        )}
+        )} */}
         <button className="heartButton">
           <i data-feather="heart" fill="none" stroke="currentColor"> </i>
         </button>
@@ -35,32 +51,35 @@ export default function PropertyCard({ property, index }) {
             <h3 className="propertyTitle">{property.title}</h3>
             <p className="propertyLocation">
               <i data-feather="map-pin" fill="none" stroke="currentColor"></i>
-              {property.location}
+              {property.address.city}, {property.address.state}
+              {/* {property.location} */}
             </p>
           </div>
           <div className="propertyPrice">
-            <p className="price">{property.price}</p>
-            <p className="pricePerSqFt">{property.pricePerSqFt}</p>
+            <p className="price">{formatIndianNumber(property.price)}</p>
+            {/* <p className="pricePerSqFt">{property.pricePerSqFt}</p> */}
           </div>
         </div>
         <div className="propertyDetails">
           <span className="propertyDetail">
             <i data-feather="square" fill="none" stroke="currentColor"> </i>
-            {property.area}
+            {property.areaSqft}
           </span>
           <span className="propertyDetail">
             <i data-feather="home" fill="none" stroke="currentColor"></i>
-            {property.bhk}
+            {property.bedrooms} BHK
+            {/* {property.bhk} BHK */} {/* iss jaghe aad kr dena bhk wala */}
           </span>
           <span className="propertyDetail">
             <i data-feather="layers" fill="none" stroke="currentColor"></i>
-            {property.status}
+            {property.listingStatus}
           </span>
         </div>
         <div className="propertyFooter">
           <div className="agentInfo">
-            <img src={property.agentImage} alt={property.agent} className="agentAvatar" />
-            <span>By {property.agent}</span>
+            {/* Ye agent image ayega yaha pe  */}
+            <img src={property.images[0].url} alt={property.images[0].altText} className="agentAvatar" />
+            <span>By {property.agentId}</span>
           </div>
           <button
             onClick={(e) => {
