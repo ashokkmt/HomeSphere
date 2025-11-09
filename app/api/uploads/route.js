@@ -4,7 +4,7 @@ import path from "path";
 import { NextResponse } from "next/server";
 
 // 🧱 CHANGE THIS TO YOUR LOCAL STATIC FOLDER PATH
-const STATIC_FOLDER = "/Users/ashok/Documents/Screenshots";
+const STATIC_FOLDER = "C:\\Users\\ashok\\OneDrive\\Desktop\\data\\2bhk & thara";
 
 export async function POST(req) {
   try {
@@ -62,4 +62,8 @@ export async function POST(req) {
       { status: 500 }
     );
   }
+}
+
+export async function GET() {
+  return NextResponse.json({ message: "Uploads API is running 🚀" });
 }
