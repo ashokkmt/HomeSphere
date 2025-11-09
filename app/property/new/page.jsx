@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../../../styles/newproperty.css";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export default function NewProperty() {
   // form fields
@@ -10,6 +11,7 @@ export default function NewProperty() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [postlcode, setPostlcode] = useState("");
   const [propertyType, setPropertyType] = useState("");
   const [bedrooms, setBedrooms] = useState("");
   const [bathrooms, setBathrooms] = useState("");
@@ -22,32 +24,67 @@ export default function NewProperty() {
   const [amenities, setAmenities] = useState("");
   const router = useRouter();
 
-  // images state: { file, previewUrl, altText }
+  // images ke cheej
   const [images, setImages] = useState([]);
   const fileInputRef = useRef(null);
-
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
+  const nextId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
-
+  
   const handleFiles = (fileList) => {
     if (!fileList || fileList.length === 0) return;
 
     const newItems = Array.from(fileList).map((file) => {
       const previewUrl = URL.createObjectURL(file);
       return {
-        propId: 1,
+        id: nextId(),
+        file,
         previewUrl,
+        filename: file.name,
         altText: "",
+        uploaded: false,
+        url: null,
       };
     });
 
     setImages((prev) => [...prev, ...newItems]);
+    if (propertyId && propertyId.trim() !== "") {
+      newItems.forEach((item) => uploadSingleImage(item));
+    }
   };
 
   const onFileChange = (e) => {
     handleFiles(e.target.files);
     e.target.value = "";
+  };
+
+  const uploadSingleImage = async (item) => {
+    if (item.uploaded) return item;
+    if (!propertyId || propertyId.trim() === "") {
+      return null;
+    }
+    const fd = new FormData();
+    fd.append("file", item.file);
+    fd.append("propertyId", propertyId.trim());
+    try {
+      setLoading(true);
+      const res = await axios.post("/api/upload-image", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const json = res.data;
+
+      setImages((prev) =>
+        prev.map((img) =>
+          img.id === item.id ? { ...img, uploaded: true, url: json.url, filename: json.filename || img.filename } : img
+        )
+      );
+      return { ...item, uploaded: true, url: json.url, filename: json.filename || item.filename };
+    } catch (err) {
+      console.log(err.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -56,18 +93,39 @@ export default function NewProperty() {
     setImages((prev) => {
       const toRemove = prev.find((p) => p.id === id);
       if (toRemove && toRemove.previewUrl) URL.revokeObjectURL(toRemove.previewUrl);
+      // delete from backend
+      if (toRemove && toRemove.uploaded) {
+        deleteImageOnServer(toRemove);
+      }
       return prev.filter((p) => p.id !== id);
     });
   };
 
+
+  const deleteImageOnServer = async (img) => {
+    if (!img || !img.filename && !img.url) return;
+    try {
+      const fileURL = img.url;
+      await axios.post("/api/delete-image", fileURL);
+    } catch (err) {
+      console.log("deleteImageOnServer failed", err?.message || err);
+    }
+  };
+
+
   // clear images
-  const clearImages = () => {
+  const clearImages = async () => {
+    const uploaded = images.filter((img) => img.uploaded);
+    if (uploaded.length) {
+      await Promise.all(uploaded.map((img) => deleteImageOnServer(img)));
+    }
     images.forEach((img) => {
       if (img.previewUrl) URL.revokeObjectURL(img.previewUrl);
     });
     setImages([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
 
   const handleAltChange = (id, value) => {
     setImages((prev) => prev.map((img) => (img.id === id ? { ...img, altText: value } : img)));
@@ -83,62 +141,48 @@ export default function NewProperty() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(null);
-
-    if (!title.trim()) {
-      setMessage({ type: "error", text: "Please provide a title." });
-      return;
-    }
 
     setLoading(true);
     try {
-      const propertyPayload = {
-        propertyId: propertyId || null,
-        title,
-        description,
-        price: price ? parseFloat(price) : null,
-        propertyType,
-        bedrooms: bedrooms ? parseInt(bedrooms, 10) : null,
-        bathrooms: bathrooms ? parseInt(bathrooms, 10) : null,
-        areaSqft: areaSqft ? parseFloat(areaSqft) : null,
-        listingStatus,
-        address: {
-          street,
-          city,
-          state: stateVal,
-          country,
-        },
-        amenities: amenities ? amenities.split(",").map((a) => a.trim()) : [],
-      };
-
-      const fd = new FormData();
-      fd.append("property", JSON.stringify(propertyPayload));
-
       const imagesMeta = [];
       images.forEach((img, idx) => {
-        fd.append("images", img.file, img.filename);
         imagesMeta.push({
-          filename: img.filename,
+          url: img.url,
           altText: img.altText || "",
-          propertyId: propertyId || null,
-          order: idx,
+          propertyId: propertyId || null
         });
       });
 
-      fd.append("imagesMeta", JSON.stringify(imagesMeta));
+      const propertyQuery = `mutation CreateProperty {
+          createProperty(
+              input: {
+                  agentId: ${1}
+                  title: ${title}
+                  description: ${description}
+                  price: ${price}
+                  propertyType: ${propertyType}
+                  bedrooms: ${bathrooms}
+                  bathrooms: ${bathrooms}
+                  areaSqft: ${areaSqft}
+                  listingStatus: ${listingStatus}
+                  address: {
+                      street: ${street}
+                      state: ${stateVal}
+                      city: ${city}
+                      postalCode: ${postlcode}
+                      country: ${country}
+                  }
+                  images: ${imagesMeta}
+                  amenities: ${amenities}
+              }
+          ) {
+              id
+          }
+      }`
 
-      const res = await fetch("/api/properties", {
-        method: "POST",
-        body: fd,
-      });
+      const res = await axios.post("/api/properties", { query: propertyQuery });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Upload failed");
-      }
-
-      const data = await res.json();
-      setMessage({ type: "success", text: "Property created successfully." });
+      console.log(res);
 
       setPropertyId("");
       setTitle("");
@@ -154,10 +198,10 @@ export default function NewProperty() {
       setStateVal("");
       setCountry("");
       setAmenities("");
+      setPostlcode("")
       clearImages();
     } catch (err) {
       console.error(err);
-      setMessage({ type: "error", text: err.message || "Something went wrong." });
     } finally {
       setLoading(false);
     }
@@ -322,6 +366,19 @@ export default function NewProperty() {
                 onChange={(e) => setStateVal(e.target.value)}
               />
             </div>
+
+            <div className="form-group">
+              <label htmlFor="postalcode">Postal Code</label>
+              <input
+                id="postalcode"
+                name="postalcode"
+                type="number"
+                placeholder="Postal Code"
+                value={postlcode}
+                onChange={(e) => setPostlcode(e.target.value)}
+              />
+            </div>
+
             <div className="form-group">
               <label htmlFor="country">Country</label>
               <input
@@ -411,12 +468,6 @@ export default function NewProperty() {
               Cancel
             </button>
           </div>
-
-          {message && (
-            <div style={{ marginTop: 12, color: message.type === "error" ? "#ef4444" : "#16a34a" }}>
-              {message.text}
-            </div>
-          )}
         </form>
       </div>
     </div>
