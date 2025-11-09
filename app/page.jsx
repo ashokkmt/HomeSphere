@@ -7,15 +7,16 @@ import { useContext, useEffect } from 'react';
 import '../styles/homepage.css';
 import SearchBar from '../components/SearchBar';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import PropertyCard from '../components/PropertyCard';
 import LocalityCard from '../components/LocalityCard';
 import Testimonials from '../components/Testimonials';
 import { PropertyContext } from './propertyContext.jsx'
 
 export default function NestQuest() {
-  const router = useRouter();
+  // const router = useRouter();
   const { allProperties } = useContext(PropertyContext);
+  // const [showPostProperty, setshowPostProperty] = useState(false);
 
   useEffect(() => {
     feather.replace();
@@ -95,7 +96,8 @@ export default function NestQuest() {
 
   return (
     <>
-      <Navbar />
+      <Navbar/>
+
       <div className="container">
         {/* Hero Section */}
         <div className="hero">

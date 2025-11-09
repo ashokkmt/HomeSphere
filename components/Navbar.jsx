@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import "../styles/navbar.css"
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function Navbar() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     if (!pathname) return;
@@ -78,11 +79,12 @@ export default function Navbar() {
               <i data-feather="bell" fill="none" stroke="currentColor"> </i>
             </button>
             <button className="iconButton">
-              <i data-feather="heart" fill="none" stroke="currentColor">
-
-              </i>
+              <i data-feather="heart" fill="none" stroke="currentColor"></i>
             </button>
-            <button className="postButton">Post Property</button>
+            <button
+              onClick={() => router.push('/property/new')}
+              className="postButton"
+            >Post Property</button>
             <img className="avatar" src="http://static.photos/people/200x200/1" alt="User" />
           </div>
           <button className="mobileMenuButton" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
