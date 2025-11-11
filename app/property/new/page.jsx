@@ -34,26 +34,29 @@ export default function NewProperty() {
   // const [payloadPreview, setPayloadPreview] = useState(null);
 
 
-
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
     setSelectedFiles((prev) => {
-      const existingNames = new Set(prev.map((p) => p.fileName));
+      // prevent duplicates based on file name
+      const existingNames = new Set(prev.map((p) => p.file.name));
+
       const newFileData = files
         .filter((file) => !existingNames.has(file.name))
         .map((file) => ({
-          fileName: file.name,
-          altText: "",
+          file,                  // actual File object for upload
+          fileName: file.name,   // for display purposes
+          altText: "",           // user can edit this later
+          previewUrl: URL.createObjectURL(file), // local preview
         }));
 
       return [...prev, ...newFileData];
     });
 
+    // reset input to allow re-selecting the same file if needed
     e.target.value = "";
   };
-
 
   // Handle alt text changes
   const handleAltTextChange = (index, value) => {
@@ -74,95 +77,137 @@ export default function NewProperty() {
     e.preventDefault();
     setImgLoading(true);
 
-
-    if (!propertyId || selectedFiles.length === 0) {
-      console.log("❌ Please select files and enter propertyId");
+    if (selectedFiles.length === 0) {
+      console.log("❌ Please select at least one file");
+      setImgLoading(false);
+      return;
     }
 
-    // Build JSON payload
-    const payload = selectedFiles.map((item, index) => ({
-      propertyId: Number(propertyId),
-      fileName: item.fileName,
-      altText: item.altText || null,
-      sortOrder: index + 1,
-    }));
+    // Build FormData for multipart upload
+    const formData = new FormData();
 
-    // setPayloadPreview(payload);
+    selectedFiles.forEach((item, index) => {
+      formData.append("images", item.file); // actual File object
+      formData.append("altTexts", item.altText || "");
+      formData.append("sortOrders", (index + 1).toString());
+    });
 
     try {
       const res = await fetch("/api/uploads", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: formData, // no need for Content-Type header
       });
 
       const data = await res.json();
+
       if (data.success) {
+        console.log("✅ Uploaded images:", data.images);
+        setImages(data.images); // [{url, altText, sortOrder}]
         setSelectedFiles([]);
-
-        // Isme images ka response dalna jo array ayega
-        setImages(data.data);
-
-        setImgLoading(false);
         setShowImageSec(false);
       } else {
         console.log(`❌ Failed: ${data.message}`);
       }
     } catch (err) {
       console.log(`❌ Error: ${err.message}`);
+    } finally {
+      setImgLoading(false);
     }
   };
+
 
 
   const handleSubmitform = async (e) => {
     e.preventDefault();
 
-    if (images.length === 0) {
+    // ✅ Step 1: Frontend validation
+    const errors = {};
+
+    if (!title.trim()) errors.title = "Title is required.";
+    if (!price.trim()) errors.price = "Price is required.";
+    if (!street.trim() || !city.trim() || !stateVal.trim() || !country.trim()) {
+      errors.address = "Complete address is required.";
+    }
+    if (images.length === 0) errors.images = "At least one image is required.";
+
+    if (Object.keys(errors).length > 0) {
+      console.warn("⚠️ Form validation failed:", errors);
+      alert(
+        Object.values(errors)
+          .map((err) => `• ${err}`)
+          .join("\n")
+      );
       return;
     }
 
     setLoading(true);
+
     try {
-      const imagesMeta = [];
-      images.forEach((img, idx) => {
-        imagesMeta.push({
-          url: img.url,
-          altText: img.altText || "",
-          propertyId: propertyId || null
-        });
-      });
+      // ✅ Step 2: Prepare images metadata
+      const imagesMeta = images.map((img, i) => ({
+        url: img.url,
+        altText: img.altText || "",
+        sortOrder: img.sortOrder || i + 1,
+      }));
 
-      const propertyQuery = `mutation CreateProperty {
-          createProperty(
-              input: {
-                  agentId: ${1}
-                  title: ${title}
-                  description: ${description}
-                  price: ${price}
-                  propertyType: ${propertyType}
-                  bedrooms: ${bathrooms}
-                  bathrooms: ${bathrooms}
-                  areaSqft: ${areaSqft}
-                  listingStatus: ${listingStatus}
-                  address: {
-                      street: ${street}
-                      state: ${stateVal}
-                      city: ${city}
-                      postalCode: ${postlcode}
-                      country: ${country}
-                  }
-                  images: ${imagesMeta}
-                  amenities: ${amenities}
-              }
+      // ✅ Step 3: Build input dynamically
+      const input = {
+        agentId: 1, // or dynamically assign later
+        title: title.trim(),
+        description: description?.trim() || "",
+        price: parseFloat(price.trim()),
+        propertyType: propertyType || "",
+        listingStatus: listingStatus || "",
+        address: {
+          street: street.trim(),
+          state: stateVal.trim(),
+          city: city.trim(),
+          postalCode: postlcode?.trim() || "",
+          country: country.trim(),
+        },
+        images: imagesMeta,
+      };
+
+      // ✅ Step 4: Include optional fields only if they have values
+      if (bedrooms) input.bedrooms = Number(bedrooms);
+      if (bathrooms) input.bathrooms = Number(bathrooms);
+      if (areaSqft) input.areaSqft = Number(areaSqft);
+      if (amenities && amenities.trim() !== "")
+        input.amenities = amenities.split(",").map((a) => a.trim());
+
+      // ✅ Step 5: Clean payload (remove empty/null/undefined values)
+      const cleanInput = JSON.parse(
+        JSON.stringify(input, (key, value) => {
+          if (
+            value === "" ||
+            value === null ||
+            value === undefined ||
+            (Array.isArray(value) && value.length === 0)
           ) {
-              id
+            return undefined;
           }
-      }`
+          return value;
+        })
+      );
 
-      const res = await axios.post("/api/properties", { query: propertyQuery });
+      // ✅ Step 6: GraphQL Mutation using variables
+      const mutation = `
+      mutation CreateProperty($input: CreatePropertyInput!) {
+        createProperty(input: $input) {
+          id
+        }
+      }
+    `;
+
+      // ✅ Step 7: Execute GraphQL Request
+      const res = await axios.post("/api/graphql", {
+        query: mutation,
+        variables: { input: cleanInput },
+      });
 
       console.log(res);
 
+      // ✅ Step 8: Reset form fields
       setPropertyId("");
       setTitle("");
       setDescription("");
@@ -180,11 +225,13 @@ export default function NewProperty() {
       setPostlcode("");
       setImages([]);
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error during property creation:", err);
+      alert("⚠️ Something went wrong while creating the property.");
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <>
@@ -247,7 +294,7 @@ export default function NewProperty() {
                       }
                     </div>
 
-                    <div className="pid">
+                    {/* <div className="pid">
                       <label >Property ID:</label>
                       <input
                         type="number"
@@ -255,7 +302,7 @@ export default function NewProperty() {
                         onChange={(e) => setPropertyId(e.target.value)}
                         placeholder="Enter property ID"
                       />
-                    </div>
+                    </div> */}
 
                     <button
                       type="submit"
@@ -287,7 +334,7 @@ export default function NewProperty() {
 
           <form className="property-form" onSubmit={handleSubmitform}>
             <div className="form-row">
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label htmlFor="propertyId">Property ID (applies to all images)</label>
                 <input
                   id="propertyId"
@@ -297,7 +344,7 @@ export default function NewProperty() {
                   value={propertyId}
                   onChange={(e) => setPropertyId(e.target.value)}
                 />
-              </div>
+              </div> */}
 
               <div className="form-group">
                 <label htmlFor="title">Title</label>

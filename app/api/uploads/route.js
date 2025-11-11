@@ -1,18 +1,28 @@
 import { prisma } from "@/lib/prisma";
-import { copyFile, mkdir } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { NextResponse } from "next/server";
 
 // 🧱 CHANGE THIS TO YOUR LOCAL STATIC FOLDER PATH
-const STATIC_FOLDER = "C:\\Users\\ashok\\OneDrive\\Desktop\\data\\2bhk & thara";
+// const STATIC_FOLDER = "C:\\Users\\ashok\\OneDrive\\Desktop\\data\\2bhk & thara";
+
+export const config = {
+  api: {
+    bodyParser: false, // required for form-data
+  },
+};
 
 export async function POST(req) {
   try {
-    const body = await req.json();
+    const formData = await req.formData();
 
-    if (!Array.isArray(body) || body.length === 0) {
+    const files = formData.getAll("images");
+    const altTexts = formData.getAll("altTexts");
+    const sortOrders = formData.getAll("sortOrders");
+
+    if (!files || files.length === 0) {
       return NextResponse.json(
-        { success: false, message: "Invalid input: must be a non-empty array" },
+        { success: false, message: "No images uploaded" },
         { status: 400 }
       );
     }
@@ -20,40 +30,31 @@ export async function POST(req) {
     const uploadDir = path.join(process.cwd(), "public", "images", "property");
     await mkdir(uploadDir, { recursive: true });
 
-    const insertedImages = [];
+    const uploadedImages = [];
 
-    for (let i = 0; i < body.length; i++) {
-      const { propertyId, altText, sortOrder, fileName } = body[i];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
 
-      if (!propertyId || !fileName) {
-        throw new Error("Missing propertyId or fileName in request.");
-      }
+      const originalName = file.name.replace(/\s+/g, "_");
+      const filename = `${Date.now()}-${originalName}`;
+      const filePath = path.join(uploadDir, filename);
 
-      const sourcePath = path.join(STATIC_FOLDER, fileName);
-
-      // generate unique name in public/images/property
-      const filename = `${Date.now()}-${fileName}`;
-      const destination = path.join(uploadDir, filename);
-
-      await copyFile(sourcePath, destination);
+      await writeFile(filePath, buffer);
 
       const imageUrl = `/images/property/${filename}`;
 
-      const newImage = await prisma.propertyImage.create({
-        data: {
-          propertyId: Number(propertyId),
-          url: imageUrl,
-          altText: altText || null,
-          sortOrder: sortOrder || i + 1,
-        },
+      uploadedImages.push({
+        url: imageUrl,
+        altText: altTexts[i] || null,
+        sortOrder: Number(sortOrders[i]) || i + 1,
       });
-
-      insertedImages.push(newImage);
     }
 
     return NextResponse.json({
       success: true,
-      images: insertedImages,
+      images: uploadedImages,
     });
   } catch (err) {
     console.error("Upload error:", err);
@@ -63,6 +64,7 @@ export async function POST(req) {
     );
   }
 }
+
 
 export async function GET() {
   return NextResponse.json({ message: "Uploads API is running 🚀" });
