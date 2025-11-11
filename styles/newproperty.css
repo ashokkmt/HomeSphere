@@ -342,14 +342,9 @@ textarea {
     justify-content: center;
     align-items: center;
     backdrop-filter: blur(4px);
-    transition: opacity 1s ease-in-out;
-    opacity: 0;
+
 }
 
-
-.add-image-main-sec.active {
-    opacity: 1;
-}
 
 .add-image-div {
     color: white;
@@ -357,9 +352,23 @@ textarea {
     padding: 30px;
     border-radius: 10px;
     position: relative;
+    animation: show 0.2s ease-in;
+    transition: opacity 0.2s ease-in-out;
 
     label {
         color: white;
+    }
+}
+
+@keyframes show {
+    from {
+        opacity: 0;
+        /* transform: scale(0); */
+    }
+
+    to {
+        /* transform: scale(1); */
+        opacity: 1;
     }
 }
 
@@ -464,6 +473,57 @@ textarea {
 .pid {
     margin-top: 1rem;
 }
+
+
+
+
+.allAmenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .8rem;
+}
+
+.amenity-p,
+.amenity-p-other {
+    cursor: pointer;
+    font-size: small;
+    padding: .5rem;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid #d0d6dc;
+    box-shadow: 0 0px 5px 0px #9b9b9b;
+    transition: transform 0.1s ease-in-out;
+}
+
+.amenity-p.active {
+    background-color: #007bff;
+    color: white;
+}
+
+
+.amenity-p:hover {
+    transform: scale(1.03);
+}
+
+.amenity-p:active {
+    transform: scale(1.01);
+}
+
+.amenity-p:focus {
+    outline: 3px solid rgba(11, 118, 255, 0.12);
+    outline-offset: 3px;
+}
+
+.amenity-p-other:hover {
+    transform: scale(1.03);
+}
+
+.amenity-p-other:active {
+    transform: scale(1.01);
+}
+
 
 
 /* responsive */

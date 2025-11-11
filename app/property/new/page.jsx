@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../../styles/newproperty.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -8,7 +8,7 @@ import { Check, X } from "react-feather";
 
 export default function NewProperty() {
   // form fields
-  const [propertyId, setPropertyId] = useState("");
+  // const [propertyId, setPropertyId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -22,7 +22,6 @@ export default function NewProperty() {
   const [city, setCity] = useState("");
   const [stateVal, setStateVal] = useState("");
   const [country, setCountry] = useState("");
-  const [amenities, setAmenities] = useState("");
   const router = useRouter();
 
   // images ke cheej
@@ -32,6 +31,30 @@ export default function NewProperty() {
   const [imgloading, setImgLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   // const [payloadPreview, setPayloadPreview] = useState(null);
+
+
+  // Aminities
+  const [allAmenities, setAllAmenities] = useState([]);
+  const [amenities, setAmenities] = useState([]);
+
+
+
+  useEffect(() => {
+    async function fetchALlAminites() {
+      const query = `query GetAllAmenities {
+        getAllAmenities {
+          id
+          name
+        }
+      }`
+
+      const res = await axios.post("http://localhost:3000/api/graphql", { query });
+      console.log(res.data?.data?.getAllAmenities)
+      setAllAmenities(res.data?.data?.getAllAmenities);
+    }
+
+    fetchALlAminites();
+  }, [])
 
 
   const handleFileChange = (e) => {
@@ -122,23 +145,7 @@ export default function NewProperty() {
 
     // ✅ Step 1: Frontend validation
     const errors = {};
-
-    if (!title.trim()) errors.title = "Title is required.";
-    if (!price.trim()) errors.price = "Price is required.";
-    if (!street.trim() || !city.trim() || !stateVal.trim() || !country.trim()) {
-      errors.address = "Complete address is required.";
-    }
-    if (images.length === 0) errors.images = "At least one image is required.";
-
-    if (Object.keys(errors).length > 0) {
-      console.warn("⚠️ Form validation failed:", errors);
-      alert(
-        Object.values(errors)
-          .map((err) => `• ${err}`)
-          .join("\n")
-      );
-      return;
-    }
+    if (images.length === 0) alert("At least one image is required.");
 
     setLoading(true);
 
@@ -166,14 +173,15 @@ export default function NewProperty() {
           country: country.trim(),
         },
         images: imagesMeta,
+
+        //Amenities yhi pe dalni hai naa
+        amenities: amenities || []
       };
 
       // ✅ Step 4: Include optional fields only if they have values
       if (bedrooms) input.bedrooms = Number(bedrooms);
       if (bathrooms) input.bathrooms = Number(bathrooms);
       if (areaSqft) input.areaSqft = Number(areaSqft);
-      if (amenities && amenities.trim() !== "")
-        input.amenities = amenities.split(",").map((a) => a.trim());
 
       // ✅ Step 5: Clean payload (remove empty/null/undefined values)
       const cleanInput = JSON.parse(
@@ -196,8 +204,7 @@ export default function NewProperty() {
         createProperty(input: $input) {
           id
         }
-      }
-    `;
+      }`;
 
       // ✅ Step 7: Execute GraphQL Request
       const res = await axios.post("/api/graphql", {
@@ -208,7 +215,7 @@ export default function NewProperty() {
       console.log(res);
 
       // ✅ Step 8: Reset form fields
-      setPropertyId("");
+      // setPropertyId("");
       setTitle("");
       setDescription("");
       setPrice("");
@@ -221,7 +228,7 @@ export default function NewProperty() {
       setCity("");
       setStateVal("");
       setCountry("");
-      setAmenities("");
+      setAmenities([]);
       setPostlcode("");
       setImages([]);
     } catch (err) {
@@ -233,13 +240,31 @@ export default function NewProperty() {
   };
 
 
+  function toggleAmenity(id) {
+    setAmenities(prev => {
+      const exists = prev.some(a => a.id === id);
+      return exists
+        ? prev.filter(a => a.id !== id)
+        : [...prev, { id }];
+    });
+  }
+
+
+
+
+  // ye console hora hai jha bhe bjna ho ye bjna -> amenities
+  useEffect(() => {
+    console.log("selected amenities:", amenities);
+  }, [amenities]);
+
+
   return (
     <>
       {
 
         showImageSec &&
-        <div className={`add-image-main-sec ${showImageSec ? "active" : ""}`}>
-          <div className={`add-image-div`}>
+        <div className={`add-image-main-sec `}>
+          <div className={`add-image-div ${showImageSec ? "active" : ""}`}>
             <X className="close-img-sec" onClick={() => setShowImageSec(false)} />
             <h2 >
               🏠 Property Image Upload
@@ -355,6 +380,7 @@ export default function NewProperty() {
                   placeholder="Enter property title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -367,6 +393,7 @@ export default function NewProperty() {
                 placeholder="Enter property description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                required
               />
             </div>
 
@@ -380,6 +407,7 @@ export default function NewProperty() {
                   placeholder="Price in ₹"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
+                  required
                 />
               </div>
 
@@ -392,6 +420,7 @@ export default function NewProperty() {
                   placeholder="e.g. Apartment"
                   value={propertyType}
                   onChange={(e) => setPropertyType(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -432,6 +461,7 @@ export default function NewProperty() {
                   placeholder="e.g. 1200"
                   value={areaSqft}
                   onChange={(e) => setAreaSqft(e.target.value)}
+                  required
                 />
               </div>
 
@@ -444,6 +474,7 @@ export default function NewProperty() {
                   placeholder="e.g. For Sale"
                   value={listingStatus}
                   onChange={(e) => setListingStatus(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -459,6 +490,7 @@ export default function NewProperty() {
                   placeholder="Street name"
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
+                  required
                 />
               </div>
               <div className="form-group">
@@ -470,6 +502,7 @@ export default function NewProperty() {
                   placeholder="City"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -484,6 +517,7 @@ export default function NewProperty() {
                   placeholder="State"
                   value={stateVal}
                   onChange={(e) => setStateVal(e.target.value)}
+                  required
                 />
               </div>
 
@@ -553,7 +587,25 @@ export default function NewProperty() {
 
             <div className="form-group full-width">
               <label htmlFor="amenities">Amenities</label>
-              <input id="amenities" name="amenities" type="text" placeholder="e.g. Pool, Gym, Parking" value={amenities} onChange={(e) => setAmenities(e.target.value)} />
+              <div className="allAmenities">
+                {
+                  allAmenities?.map((amenity) => {
+                    return (
+                      <p
+                        tabIndex={0}
+                        role="button"
+                        onClick={(e) => toggleAmenity(amenity?.id)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleAmenity(amenity.id); }}
+                        className={`amenity-p ${amenities.some(a => a.id === amenity.id) ? "active" : ""}`}
+                      >
+                        {amenity.name}
+                      </p>
+                    )
+                  })
+                }
+                <p className="amenity-p-other">other</p>
+              </div>
+
             </div>
 
             <div className="form-actions">
