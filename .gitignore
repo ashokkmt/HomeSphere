@@ -16,3 +16,4 @@ prisma/dev.db-journal
 public
 
 *.pdf
+/lib/generated/prisma
