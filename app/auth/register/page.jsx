@@ -15,7 +15,8 @@ export default function Register() {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'buyer'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -44,19 +45,22 @@ export default function Register() {
       return;
     }
 
+    console.log(formData)
+
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ formData}),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Signup failed');
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error || "Signup failed");
+        return;
       }
 
+      // localStorage.setItem("accessToken", signinData.accessToken);
       router.push("/auth/login");
     } catch (err) {
       setError(err.message);
@@ -127,6 +131,15 @@ export default function Register() {
               onChange={handleChange}
               required
             />
+          </div>
+
+          <div className="register-formGroup">
+            <label htmlFor="role">Role</label>
+            <select onChange={(e) => handleChange(e)} name="role" value={formData.role}>
+              <option value="buyer">Buyer</option>
+              <option value="agent">Agent</option>
+              <option value="admin">Admin</option>
+            </select>
           </div>
 
           <button

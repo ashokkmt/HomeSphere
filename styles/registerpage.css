@@ -71,7 +71,7 @@
     margin-bottom: 20px;
 }
 
-.register-form{
+.register-form {
     margin-top: 2rem;
 }
 
@@ -92,6 +92,20 @@
 }
 
 .register-formGroup input:focus {
+    outline: none;
+    border-color: #4f46e5;
+}
+
+.register-formGroup select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.register-formGroup select:focus {
     outline: none;
     border-color: #4f46e5;
 }

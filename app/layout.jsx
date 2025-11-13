@@ -1,6 +1,10 @@
 import "../styles/mainLayout.css"
 import axios from "axios";
 import PropertyProvider from "./propertyContext.jsx";
+import { cookies } from "next/headers";
+import { verifyAccessToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import AuthProvider from "./UserContext";
 
 export const metadata = {
   title: "Homesphere",
@@ -8,6 +12,24 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
+
+
+  let user = null;
+  try {
+    const cookieStore = cookies(); // call before any await
+    const token = cookieStore.get("access_token")?.value;
+    if (token) {
+      const payload = verifyAccessToken(token); // sync verify
+      // DB call is awaited below (OK) but cookie reading happened first
+      user = await prisma.user.findUnique({
+        where: { id: parseInt(payload.sub, 10) },
+        select: { id: true, email: true, fullName: true, role: true },
+      });
+    }
+  } catch (err) {
+    console.warn("Could not verify token in layout:", err?.message);
+    user = null;
+  }
 
   const query = `query GetAllProperties {
     getAllProperties {
@@ -37,15 +59,16 @@ export default async function RootLayout({ children }) {
   const res = await axios.post("http://localhost:3000/api/graphql", { query });
   const initialProperties = res?.data?.data?.getAllProperties;
 
+
   return (
     <html lang="en">
       <body>
         {/* {show && <Navbar />} */}
-
-        <PropertyProvider initialProperties={initialProperties}>
-          <main>{children}</main>
-        </PropertyProvider>
-
+        <AuthProvider initialUser={user}>
+          <PropertyProvider initialProperties={initialProperties}>
+            <main>{children}</main>
+          </PropertyProvider>
+        </AuthProvider>
         {/* {show && <Footer />} */}
       </body>
     </html>

@@ -18,7 +18,19 @@ model User {
   agent     Agent?
   favorites Favorite[]
   inquiries Inquiry[]  @relation("buyer_inquiries")
+  refreshTokens RefreshToken[]
 }
+
+model RefreshToken {
+  id         Int      @id @default(autoincrement())
+  tokenHash  String
+  userId     Int
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  revoked    Boolean  @default(false)
+  user       User     @relation(fields: [userId], references: [id])
+}
+
 
 model Agent {
   id         Int        @id @default(autoincrement())

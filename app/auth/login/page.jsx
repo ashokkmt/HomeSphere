@@ -6,13 +6,16 @@ import feather from 'feather-icons'
 import Link from 'next/link';
 import { FcGoogle } from 'react-icons/fc';
 import { LogIn } from 'react-feather';
+import { useRouter } from 'next/navigation';
+// import { useAuth } from '@/app/UserContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
+  const router = useRouter();
+  // const { setUser } = useAuth();
 
   useEffect(() => {
     feather.replace();
@@ -25,20 +28,21 @@ export default function Login() {
 
     try {
       // Replace with actual API call
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+      const res = await fetch("/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error || "Sign in failed");
+        return;
       }
 
-      // Redirect on successful login
-      window.location.href = '/';
+      // router.push("/"); // or your dashboard
+      // router.refresh();
+      window.location.href = "/";
+
     } catch (err) {
       setError(err.message);
       setLoading(false);
@@ -89,7 +93,7 @@ export default function Login() {
             className="loginButton"
             disabled={loading}
           >
-            <LogIn size={20}/>
+            <LogIn size={20} />
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>

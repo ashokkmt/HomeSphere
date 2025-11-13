@@ -4,12 +4,26 @@ import { useEffect, useState } from "react";
 import "../styles/navbar.css"
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+// import { isAuthenticated } from "./utils/isAuthenticated";
+import { ChevronDown } from "react-feather";
+// import { isAuthenticated } from "./utils/isAuthenticated";
+// import { useAuth } from "../app/UserContext";
+import { useAuth } from "@/app/UserContext";
 
 export default function Navbar() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const [isAuth, setIsAuth] = useState(false);
+  const [showUserDrop, setshowUserDrop] = useState(false);
+  const { user, setUser } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      setIsAuth(true);
+    }
+  }, [user])
 
   useEffect(() => {
     if (!pathname) return;
@@ -36,6 +50,24 @@ export default function Navbar() {
     const el = document.querySelector(`.${view}.${tab}`);
     if (el) el.classList.add(which);
   };
+
+
+  const logoutuser = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/api/auth/logout",
+        { method: "POST", credentials: "include" }
+      )
+      if (res.ok) {
+        console.log(res);
+        setUser(null);
+        window.location.href = "/";
+        // router.push("/");
+        // router.refresh();
+      }
+    } catch (error) {
+      console.log(error + " this error is here")
+    }
+  }
 
 
   return (
@@ -82,10 +114,46 @@ export default function Navbar() {
               <i data-feather="heart" fill="none" stroke="currentColor"></i>
             </button>
             <button
-              onClick={() => router.push('/property/new')}
+              onClick={() => {
+                if (isAuth) {
+                  router.push('/property/new')
+                }
+                else {
+                  router.push('/auth/login');
+                }
+              }}
               className="postButton"
             >Post Property</button>
-            <img className="avatar" src="http://static.photos/people/200x200/1" alt="User" />
+            {
+              isAuth ?
+                <>
+                  <div className="login-icon-box">
+                    <img
+                      className="avatar"
+                      src="http://static.photos/people/200x200/1"
+                      alt="User"
+                    />
+                    <span>{user?.fullName.split(" ")[0]}</span>
+
+                    <ChevronDown
+                      onClick={() => setshowUserDrop(!showUserDrop)}
+                      className={`login-dropdown-icon ${showUserDrop ? "active" : ""}`}
+                    />
+
+                    <div className={`showDropContent ${showUserDrop ? "open" : ""}`}>
+                      <div>
+                        <Link href={"/"}>Home</Link>
+                        <Link href={"/property"}>Properties</Link>
+                        <button onClick={() => logoutuser()} >Logout</button>
+                      </div>
+                    </div>
+                  </div>
+
+                </>
+                :
+                <button onClick={() => router.push("/auth/login")} className="loginBTN">Login</button>
+            }
+
           </div>
           <button className="mobileMenuButton" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             <i data-feather="menu" fill="none" stroke="currentColor">

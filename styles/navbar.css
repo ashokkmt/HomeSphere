@@ -184,6 +184,100 @@
     stroke-width: 2;
 }
 
+
+
+.loginBTN {
+    background-color: #dedede;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    color: black;
+    transition: background-color 0.2s;
+}
+
+.loginBTN:hover {
+    background-color: #d4d4db;
+}
+
+.loginBTN:active {
+    background-color: #dedede;
+}
+
+
+.login-icon-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.login-dropdown-icon {
+  cursor: pointer;
+  color: #6b7280;
+  transition: transform 0.3s ease-in-out;
+}
+
+.login-dropdown-icon.active {
+  transform: rotate(180deg);
+}
+
+.login-dropdown-icon:hover {
+  color: black;
+}
+
+/* Dropdown container */
+.showDropContent {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  width: max-content;
+  max-height: 0; 
+  opacity: 0;
+  overflow: hidden;
+  background: #d1d1d1;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition:
+    max-height 0.4s ease-in-out,
+    opacity 0.3s ease-in-out;
+}
+
+.showDropContent.open {
+  max-height: 200px; 
+  opacity: 1;
+}
+
+.showDropContent > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.showDropContent a, .showDropContent button {
+  padding: 0.5rem 1rem;
+  background-color: #d1d1d1;
+  text-decoration: none;
+  color: black;
+  transition: background-color 0.2s;
+}
+
+.showDropContent a:hover, .showDropContent button:hover  {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.showDropContent button {
+    border: none;
+    text-align: left;
+    font-size: medium;
+    cursor: pointer;
+}
+
+
 /* Mobile Menu */
 .mobileMenu {
     padding: 0.5rem 0 0.75rem;
