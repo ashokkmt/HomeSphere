@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
 }
 
 datasource db {
@@ -72,31 +73,32 @@ model Address {
   country    String?
   latitude   Float?
   longitude  Float?
-  property   Property @relation(fields: [propertyId], references: [id])
+  Property   Property @relation(fields: [propertyId], references: [id])
 }
 
-model PropertyImage {
-  id         Int      @id @default(autoincrement())
-  propertyId Int
-  url        String
-  altText    String?
-  sortOrder  Int      @default(0)
-  property   Property @relation(fields: [propertyId], references: [id])
+model Agent {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  agency    String?
+  licenseNo String?
+  User      User       @relation(fields: [userId], references: [id])
+  Property  Property[]
 }
 
 model Amenity {
-  id         Int               @id @default(autoincrement())
-  name       String            @unique
-  properties PropertyAmenity[]
+  id              Int               @id @default(autoincrement())
+  name            String            @unique
+  PropertyAmenity PropertyAmenity[]
 }
 
-model PropertyAmenity {
+model Favorite {
+  userId     Int
   propertyId Int
-  amenityId  Int
-  amenity    Amenity  @relation(fields: [amenityId], references: [id])
-  property   Property @relation(fields: [propertyId], references: [id])
+  savedAt    DateTime @default(now())
+  Property   Property @relation(fields: [propertyId], references: [id])
+  User       User     @relation(fields: [userId], references: [id])
 
-  @@id([propertyId, amenityId])
+  @@id([userId, propertyId])
 }
 
 model Inquiry {
@@ -107,18 +109,60 @@ model Inquiry {
   contactPhone String?
   status       String   @default("new")
   createdAt    DateTime @default(now())
-  buyer        User?    @relation("buyer_inquiries", fields: [buyerId], references: [id])
-  property     Property @relation(fields: [propertyId], references: [id])
+  User         User?    @relation(fields: [buyerId], references: [id])
+  Property     Property @relation(fields: [propertyId], references: [id])
 }
 
-model Favorite {
-  userId     Int
-  propertyId Int
-  savedAt    DateTime @default(now())
-  property   Property @relation(fields: [propertyId], references: [id])
-  user       User     @relation(fields: [userId], references: [id])
+model Property {
+  id              Int               @id @default(autoincrement())
+  agentId         Int
+  title           String
+  description     String?
+  price           Float
+  propertyType    String
+  bedrooms        Int?
+  bathrooms       Int?
+  areaSqft        Int?
+  listingStatus   String            @default("active")
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  Address         Address?
+  Favorite        Favorite[]
+  Inquiry         Inquiry[]
+  Agent           Agent             @relation(fields: [agentId], references: [id])
+  PropertyAmenity PropertyAmenity[]
+  PropertyImage   PropertyImage[]
+}
 
-  @@id([userId, propertyId])
+model PropertyAmenity {
+  propertyId Int
+  amenityId  Int
+  Amenity    Amenity  @relation(fields: [amenityId], references: [id])
+  Property   Property @relation(fields: [propertyId], references: [id])
+
+  @@id([propertyId, amenityId])
+}
+
+model PropertyImage {
+  id         Int      @id @default(autoincrement())
+  propertyId Int
+  url        String
+  altText    String?
+  sortOrder  Int      @default(0)
+  Property   Property @relation(fields: [propertyId], references: [id])
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  password  String
+  createdAt DateTime   @default(now())
+  email     String     @unique
+  fullName  String?
+  phone     String?
+  role      Role       @default(BUYER)
+  Agent     Agent?
+  Favorite  Favorite[]
+  Inquiry   Inquiry[]
 }
 
 enum Role {
