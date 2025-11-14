@@ -34,7 +34,7 @@ export default async function RootLayout({ children }) {
   const query = `query GetAllProperties {
     getAllProperties {
         id
-        agentId
+        userId
         title
         description
         price

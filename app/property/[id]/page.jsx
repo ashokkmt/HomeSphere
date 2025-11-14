@@ -29,7 +29,7 @@ function PropertyDetail() {
       const query = `query GetPropertyById {
           getPropertyById(id: ${id}) {
               id
-              agentId
+              userId
               title
               description
               price

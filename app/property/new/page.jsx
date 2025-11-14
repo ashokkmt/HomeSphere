@@ -159,7 +159,7 @@ export default function NewProperty() {
 
       // ✅ Step 3: Build input dynamically
       const input = {
-        agentId: 1, // or dynamically assign later
+        userId: 1, // or dynamically assign later
         title: title.trim(),
         description: description?.trim() || "",
         price: parseFloat(price.trim()),

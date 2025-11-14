@@ -15,10 +15,11 @@ model User {
   fullName      String?
   phone         String?
   role          Role           @default(BUYER)
-  agent         Agent?
+  // agent         Agent?
   favorites     Favorite[]
   inquiries     Inquiry[]      @relation("buyer_inquiries")
   refreshTokens RefreshToken[]
+  properties    Property[]
 }
 
 model RefreshToken {
@@ -31,18 +32,19 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id])
 }
 
-model Agent {
-  id         Int        @id @default(autoincrement())
-  userId     Int        @unique
-  agency     String?
-  licenseNo  String?
-  user       User       @relation(fields: [userId], references: [id])
-  properties Property[]
-}
+// model Agent {
+//   id         Int        @id @default(autoincrement())
+//   userId     Int        @unique
+//   agency     String?
+//   licenseNo  String?
+//   user       User       @relation(fields: [userId], references: [id])
+//   properties Property[]
+// }
 
 model Property {
   id            Int               @id @default(autoincrement())
-  agentId       Int
+  // agentId       Int
+  userId        Int
   title         String
   description   String?
   price         Float
@@ -56,7 +58,8 @@ model Property {
   address       Address?
   favorites     Favorite[]
   inquiries     Inquiry[]
-  agent         Agent             @relation(fields: [agentId], references: [id])
+  // agent         Agent             @relation(fields: [agentId], references: [id])
+  user          User              @relation(fields: [userId], references: [id])
   amenities     PropertyAmenity[]
   images        PropertyImage[]
 }
