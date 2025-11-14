@@ -7,8 +7,11 @@ import PropertyCard from "../../components/PropertyCard.jsx";
 import { Search } from "react-feather";
 import { useContext, useMemo, useState } from "react";
 import { PropertyContext } from "../propertyContext.jsx";
+import { FavouriteContext } from "../FavouriteContext.jsx";
 
 function PropertyList() {
+
+    const { favorites, setfavorites, refreshFav } = useContext(FavouriteContext);
 
     // const properties = [
     //     {
@@ -210,6 +213,9 @@ function PropertyList() {
                                 <PropertyCard
                                     index={index}
                                     property={property}
+                                    favorites={favorites}
+                                    setfavorites={setfavorites}
+                                    refreshFav={refreshFav}
                                 />
                             ))
                         )

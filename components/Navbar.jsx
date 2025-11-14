@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "../styles/navbar.css"
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown } from "react-feather";
 // import { isAuthenticated } from "./utils/isAuthenticated";
 // import { useAuth } from "../app/UserContext";
+import feather from 'feather-icons';
 import { useAuth } from "@/app/UserContext";
 
 export default function Navbar() {
@@ -18,6 +19,24 @@ export default function Navbar() {
   const [isAuth, setIsAuth] = useState(false);
   const [showUserDrop, setshowUserDrop] = useState(false);
   const { user, setUser } = useAuth();
+  const dropdownRef = useRef();
+
+
+  useEffect(() => {
+    feather.replace();
+
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setshowUserDrop(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [])
 
   useEffect(() => {
     if (user) {
@@ -61,11 +80,22 @@ export default function Navbar() {
         console.log(res);
         setUser(null);
         window.location.href = "/";
+        // refreshUser();
         // router.push("/");
-        // router.refresh();
       }
     } catch (error) {
       console.log(error + " this error is here")
+    }
+  }
+
+
+  const favourates = () => {
+    console.log("Here")
+    if (isAuth) {
+      router.push("/favorites")
+    }
+    else {
+      router.push('/auth/login')
     }
   }
 
@@ -108,10 +138,15 @@ export default function Navbar() {
           </div>
           <div className="navRight">
             <button className="iconButton">
-              <i data-feather="bell" fill="none" stroke="currentColor"> </i>
+              <i data-feather="bell" stroke="currentColor"> </i>
             </button>
-            <button className="iconButton">
-              <i data-feather="heart" fill="none" stroke="currentColor"></i>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                favourates();
+              }}
+              className="iconButton">
+              <i data-feather="heart" fill="none" stroke="currentColor" ></i>
             </button>
             <button
               onClick={() => {
@@ -127,7 +162,7 @@ export default function Navbar() {
             {
               isAuth ?
                 <>
-                  <div className="login-icon-box">
+                  <div ref={dropdownRef} className="login-icon-box">
                     <img
                       className="avatar"
                       src="http://static.photos/people/200x200/1"
@@ -142,7 +177,7 @@ export default function Navbar() {
 
                     <div className={`showDropContent ${showUserDrop ? "open" : ""}`}>
                       <div>
-                        <Link href={"/"}>Home</Link>
+                        <Link href={"/dashboard"}>Dashboard</Link>
                         <Link href={"/property"}>Properties</Link>
                         <button onClick={() => logoutuser()} >Logout</button>
                       </div>

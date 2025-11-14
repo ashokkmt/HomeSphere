@@ -4,14 +4,22 @@ import { useEffect } from 'react';
 import '../styles/propertycard.css'
 import feather from 'feather-icons'
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/UserContext';
+import axios from 'axios';
 
-export default function PropertyCard({ property, index }) {
 
+export default function PropertyCard({ property, index, favorites, refreshFav }) {
+
+  const { user } = useAuth();
   const router = useRouter();
+  console.log(favorites)
+
+  const isFav = Boolean(favorites?.some(fav => Number(fav.propertyId) === Number(property.id)));
+  console.log(isFav)
 
   useEffect(() => {
     feather.replace();
-  }, [])
+  }, [isFav])
 
   const NavigateToProperty = async (id) => {
     console.log("Go to Properties..");
@@ -34,6 +42,69 @@ export default function PropertyCard({ property, index }) {
   }
 
 
+  const toggleFav = async (userID, propID) => {
+    if (isFav) {
+      removeFavouties(userID, propID);
+    } else {
+      addTofavorites(userID, propID);
+    }
+  }
+
+  const addTofavorites = async (userID = null, propId) => {
+    if (!user) {
+      router.push('/auth/login');
+      return;
+    }
+
+    console.log(userID, propId)
+
+    try {
+      const query = `
+        mutation AddFavorite($userId: Int!, $propertyId: Int!) {
+          addFavorite(input: { userId: $userId, propertyId: $propertyId }) {
+            propertyId
+          }
+        }
+      `;
+
+      const res = await axios.post("http://localhost:3000/api/graphql", { query, variables: { userId: Number(userID), propertyId: Number(propId) } });
+      if (res.data.errors) {
+        console.error("GraphQL errors:", JSON.stringify(res.data.errors, null, 2));
+      } else {
+        console.log("GraphQL data:", res.data.data);
+      }
+
+      refreshFav();
+
+    } catch (error) {
+      console.error("Request error:", error.response?.data || error.message || error);
+    }
+  };
+
+  const removeFavouties = async (userId, propId) => {
+    if (!user) {
+      router.push('/auth/login');
+      return;
+    }
+
+    try {
+      const query = `
+        mutation RemoveFavorite {
+          removeFavorite(input: { userId: ${userId}, propertyId: ${propId} })
+        }
+      `;
+
+      const res = await axios.post("http://localhost:3000/api/graphql", { query });
+
+      if (res.data.errors) {
+        console.error(res.data.errors);
+      }
+      refreshFav();
+    } catch (error) {
+      console.log(error.message + " This is in removing fav...")
+    }
+  }
+
   return (
     <div key={index} className="propertyCard">
       <div className="propertyImageWrapper">
@@ -41,8 +112,8 @@ export default function PropertyCard({ property, index }) {
         {/* {property.featured && (
           <div className="featuredBadge">Featured</div>
         )} */}
-        <button className="heartButton">
-          <i data-feather="heart" fill="none" stroke="currentColor"> </i>
+        <button onClick={() => toggleFav(user?.id, property.id)} className={`heartButton ${isFav ? "favourited" : ""}`}>
+          <i className='heart-icon' data-feather="heart" fill="none" stroke="currentColor"> </i>
         </button>
       </div>
       <div className="propertyContent">

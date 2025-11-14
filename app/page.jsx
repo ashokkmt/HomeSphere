@@ -12,10 +12,12 @@ import PropertyCard from '../components/PropertyCard';
 import LocalityCard from '../components/LocalityCard';
 import Testimonials from '../components/Testimonials';
 import { PropertyContext } from './propertyContext.jsx'
+import { FavouriteContext } from '@/app/FavouriteContext';
 
 export default function NestQuest() {
   // const router = useRouter();
   const { allProperties } = useContext(PropertyContext);
+   const { favorites, setfavorites, refreshFav } = useContext(FavouriteContext);
   // const [showPostProperty, setshowPostProperty] = useState(false);
 
   useEffect(() => {
@@ -122,6 +124,8 @@ export default function NestQuest() {
                   <PropertyCard
                     index={index}
                     property={property}
+                    favorites={favorites}
+                    refreshFav={refreshFav}
                   />
                 )
               })

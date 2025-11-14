@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { FcGoogle } from 'react-icons/fc';
 import { LogIn } from 'react-feather';
 import { useRouter } from 'next/navigation';
-// import { useAuth } from '@/app/UserContext';
+import { useAuth } from '@/app/UserContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -15,7 +15,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  // const { setUser } = useAuth();
+  const { refreshUser } = useAuth();
 
   useEffect(() => {
     feather.replace();
@@ -39,9 +39,10 @@ export default function Login() {
         return;
       }
 
-      // router.push("/"); // or your dashboard
+      await refreshUser();
+      router.push("/"); // or your dashboard
       // router.refresh();
-      window.location.href = "/";
+      // window.location.href = "/";
 
     } catch (err) {
       setError(err.message);
