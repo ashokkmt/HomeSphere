@@ -3,7 +3,7 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import feather from 'feather-icons'
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import '../styles/homepage.css';
 import SearchBar from '../components/SearchBar';
 import Link from 'next/link';
@@ -17,57 +17,14 @@ import { FavouriteContext } from '@/app/FavouriteContext';
 export default function NestQuest() {
   // const router = useRouter();
   const { allProperties } = useContext(PropertyContext);
-   const { favorites, setfavorites, refreshFav } = useContext(FavouriteContext);
-  // const [showPostProperty, setshowPostProperty] = useState(false);
+  const { favorites, refreshFav } = useContext(FavouriteContext);
+  const [confirmedModel, setConfirmedModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     feather.replace();
   }, []);
 
-  // const properties = [
-  //   {
-  //     id: 1,
-  //     title: 'Luxury Villa in Bangalore',
-  //     location: 'Whitefield, Bangalore',
-  //     price: '₹1.2 Cr',
-  //     pricePerSqFt: '₹8,500/sq.ft',
-  //     area: '1,400 sq.ft',
-  //     bhk: '3 BHK',
-  //     status: 'Ready to Move',
-  //     featured: true,
-  //     agent: 'John Properties',
-  //     image: 'http://static.photos/real-estate/640x360/1',
-  //     agentImage: 'http://static.photos/people/200x200/2'
-  //   },
-  //   {
-  //     id: 2,
-  //     title: 'Modern Apartment in Mumbai',
-  //     location: 'Bandra West, Mumbai',
-  //     price: '₹2.5 Cr',
-  //     pricePerSqFt: '₹15,000/sq.ft',
-  //     area: '1,650 sq.ft',
-  //     bhk: '2 BHK',
-  //     status: 'Under Construction',
-  //     featured: false,
-  //     agent: 'Elite Realtors',
-  //     image: 'http://static.photos/real-estate/640x360/2',
-  //     agentImage: 'http://static.photos/people/200x200/3'
-  //   },
-  //   {
-  //     id: 3,
-  //     title: 'Premium Villa in Goa',
-  //     location: 'Candolim, Goa',
-  //     price: '₹3.8 Cr',
-  //     pricePerSqFt: '₹6,500/sq.ft',
-  //     area: '5,800 sq.ft',
-  //     bhk: '4 BHK',
-  //     status: 'Ready to Move',
-  //     featured: false,
-  //     agent: 'Sunshine Properties',
-  //     image: 'http://static.photos/real-estate/640x360/3',
-  //     agentImage: 'http://static.photos/people/200x200/4'
-  //   }
-  // ];
 
   const localities = [
     { name: 'Bandra West', avgPrice: '₹25,000/sq.ft', properties: '248+', image: 'http://static.photos/cityscape/640x360/1' },
@@ -98,7 +55,14 @@ export default function NestQuest() {
 
   return (
     <>
-      <Navbar/>
+      {
+        confirmedModel &&
+        <ConfirmCard
+          setConfirmDelete={setConfirmDelete}
+          setConfirmedModal={setConfirmedModal}
+        />
+      }
+      <Navbar />
 
       <div className="container">
         {/* Hero Section */}
@@ -118,7 +82,7 @@ export default function NestQuest() {
           </div>
           <div className="propertyGrid">
             {
-              allProperties.map((property, index) => {
+              allProperties?.map((property, index) => {
                 if (index >= 3) return;
                 return (
                   <PropertyCard
@@ -126,6 +90,10 @@ export default function NestQuest() {
                     property={property}
                     favorites={favorites}
                     refreshFav={refreshFav}
+                    confirmDelete={confirmDelete}
+                    setConfirmDelete={setConfirmDelete}
+                    confirmedModel={confirmedModel}
+                    setConfirmedModal={setConfirmedModal}
                   />
                 )
               })

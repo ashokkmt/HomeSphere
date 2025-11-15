@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FcGoogle } from "react-icons/fc";
 import feather from 'feather-icons'
+import { SuccessToast } from '@/components/utils/toast';
 
 export default function Register() {
 
@@ -52,7 +53,7 @@ export default function Register() {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formData}),
+        body: JSON.stringify({ formData }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -60,7 +61,7 @@ export default function Register() {
         return;
       }
 
-      // localStorage.setItem("accessToken", signinData.accessToken);
+      SuccessToast("Register Successfully");
       router.push("/auth/login");
     } catch (err) {
       setError(err.message);

@@ -15,11 +15,10 @@ model User {
   fullName      String?
   phone         String?
   role          Role           @default(BUYER)
-  // agent         Agent?
   favorites     Favorite[]
   inquiries     Inquiry[]      @relation("buyer_inquiries")
-  refreshTokens RefreshToken[]
   properties    Property[]
+  refreshTokens RefreshToken[]
 }
 
 model RefreshToken {
@@ -32,19 +31,8 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id])
 }
 
-// model Agent {
-//   id         Int        @id @default(autoincrement())
-//   userId     Int        @unique
-//   agency     String?
-//   licenseNo  String?
-//   user       User       @relation(fields: [userId], references: [id])
-//   properties Property[]
-// }
-
 model Property {
   id            Int               @id @default(autoincrement())
-  // agentId       Int
-  userId        Int
   title         String
   description   String?
   price         Float
@@ -55,10 +43,10 @@ model Property {
   listingStatus String            @default("active")
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
+  userId        Int
   address       Address?
   favorites     Favorite[]
   inquiries     Inquiry[]
-  // agent         Agent             @relation(fields: [agentId], references: [id])
   user          User              @relation(fields: [userId], references: [id])
   amenities     PropertyAmenity[]
   images        PropertyImage[]
@@ -74,7 +62,7 @@ model Address {
   country    String?
   latitude   Float?
   longitude  Float?
-  property   Property @relation(fields: [propertyId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
 
 model PropertyImage {
@@ -83,7 +71,7 @@ model PropertyImage {
   url        String
   altText    String?
   sortOrder  Int      @default(0)
-  property   Property @relation(fields: [propertyId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
 
 model Amenity {
@@ -96,7 +84,7 @@ model PropertyAmenity {
   propertyId Int
   amenityId  Int
   amenity    Amenity  @relation(fields: [amenityId], references: [id])
-  property   Property @relation(fields: [propertyId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@id([propertyId, amenityId])
 }
@@ -110,14 +98,14 @@ model Inquiry {
   status       String   @default("new")
   createdAt    DateTime @default(now())
   buyer        User?    @relation("buyer_inquiries", fields: [buyerId], references: [id])
-  property     Property @relation(fields: [propertyId], references: [id])
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
 
 model Favorite {
   userId     Int
   propertyId Int
   savedAt    DateTime @default(now())
-  property   Property @relation(fields: [propertyId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id])
 
   @@id([userId, propertyId])

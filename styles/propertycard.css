@@ -186,3 +186,34 @@
 .viewDetailsButton:hover {
     color: #4338ca;
 }
+
+
+.actions {
+    display: flex;
+    gap: .5rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.Update,
+.Delete {
+    transition: color 0.2s;
+    cursor: pointer;
+}
+
+.Update {
+    color: rgb(88, 231, 88);
+}
+
+.Delete {
+    color: rgb(216, 72, 72);
+}
+
+.Update:hover {
+    color: rgb(13, 206, 13);
+}
+
+.Delete:hover {
+    color: rgb(205, 4, 4);
+}
+

@@ -21,6 +21,10 @@ export default function Favorites() {
   const [favItems, setFavItems] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const { favorites, setfavorites, refreshFav } = useContext(FavouriteContext);
+  const [confirmedModel, setConfirmedModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+
 
   useEffect(() => {
     if (user === null) {
@@ -75,43 +79,58 @@ export default function Favorites() {
   }, [user, allProperties, router, favorites]);
 
   return (
-    <div className="favorites">
+    <>
 
       {
-        isLoaded &&
-        <div className="loading-overlay">
-          <div className="loadingCircle"></div>
-          <div>Loading</div>
-        </div>
+        confirmedModel &&
+        <ConfirmCard
+          setConfirmDelete={setConfirmDelete}
+          setConfirmedModal={setConfirmedModal}
+        />
       }
 
-      <ArrowLeft onClick={() => router.back()} className="back-arrow" />
-      <div className="fav-header">
-        <h1>Favorites</h1>
-        <div >Saved places</div>
-      </div>
+      <div className="favorites">
 
-      {
-        favoriteProperties?.length === 0 ? (
-          <div className="empty-state">No favorites yet</div>
-        ) : (
-          <div className="propertyGridFav">
-            {
-              favoriteProperties?.map((p) => {
-                return (
-                  <PropertyCard
-                    key={p.id}
-                    property={p}
-                    favorites={favorites}
-                    setfavorites={setfavorites}
-                    refreshFav={refreshFav}
-                  />
-                )
-              })
-            }
+        {
+          isLoaded &&
+          <div className="loading-overlay">
+            <div className="loadingCircle"></div>
+            <div>Loading</div>
           </div>
-        )
-      }
-    </div>
+        }
+
+        <ArrowLeft onClick={() => router.back()} className="back-arrow" />
+        <div className="fav-header">
+          <h1>Favorites</h1>
+          <div >Saved places</div>
+        </div>
+
+        {
+          favoriteProperties?.length === 0 ? (
+            <div className="empty-state">No favorites yet</div>
+          ) : (
+            <div className="propertyGridFav">
+              {
+                favoriteProperties?.map((p) => {
+                  return (
+                    <PropertyCard
+                      key={p.id}
+                      property={p}
+                      favorites={favorites}
+                      setfavorites={setfavorites}
+                      refreshFav={refreshFav}
+                      confirmDelete={confirmDelete}
+                      setConfirmDelete={setConfirmDelete}
+                      confirmedModel={confirmedModel}
+                      setConfirmedModal={setConfirmedModal}
+                    />
+                  )
+                })
+              }
+            </div>
+          )
+        }
+      </div>
+    </>
   );
 }

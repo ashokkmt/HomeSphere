@@ -4,35 +4,18 @@ import PropertyProvider from "./propertyContext.jsx";
 import AuthProvider from "./UserContext";
 import { FavouriteProvider } from "./FavouriteContext";
 import { getCurrentUser } from "@/lib/getCurrentUser";
+import { Toaster } from 'react-hot-toast';
 
 export const metadata = {
   title: "Homesphere",
   description: "Modern real-estate marketplace",
 };
 
-export default async function RootLayout({ children }) {
 
-  const user = await getCurrentUser();
-
-  // let user = null;
-  // try {
-  //   const cookieStore = cookies(); // call before any await
-  //   const token = cookieStore.get("access_token")?.value;
-  //   if (token) {
-  //     const payload = verifyAccessToken(token); // sync verify
-  //     // DB call is awaited below (OK) but cookie reading happened first
-  //     user = await prisma.user.findUnique({
-  //       where: { id: parseInt(payload.sub, 10) },
-  //       select: { id: true, email: true, fullName: true, role: true },
-  //     });
-  //   }
-  // } catch (err) {
-  //   console.warn("Could not verify token in layout:", err?.message);
-  //   user = null;
-  // }
+async function fetchProperties() {
 
   const query = `query GetAllProperties {
-    getAllProperties {
+      getAllProperties {
         id
         userId
         title
@@ -54,10 +37,20 @@ export default async function RootLayout({ children }) {
           city
           state
         }
+        user {
+          fullName
+        }
       }
-  }`
+    }`
+
   const res = await axios.post("http://localhost:3000/api/graphql", { query });
-  const initialProperties = res?.data?.data?.getAllProperties;
+  return res?.data?.data?.getAllProperties;
+}
+
+export default async function RootLayout({ children }) {
+
+  const user = await getCurrentUser();
+  const initialProperties = await fetchProperties();
 
 
   return (
@@ -71,6 +64,7 @@ export default async function RootLayout({ children }) {
             </FavouriteProvider>
           </PropertyProvider>
         </AuthProvider>
+        <Toaster />
         {/* {show && <Footer />} */}
       </body>
     </html>

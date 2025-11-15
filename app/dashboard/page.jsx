@@ -11,12 +11,16 @@ import { PropertyContext } from "../propertyContext";
 import '../../styles/dashboard.css'
 import PropertyCard from "@/components/PropertyCard";
 import axios from "axios";
+import ConfirmCard from "@/components/ConfirmCard";
+import { FailedToast, SuccessToast } from "@/components/utils/toast";
 
 export default function DashboardPage() {
     const router = useRouter();
     const { user, refreshUser } = useAuth();
     const { favorites = [], refreshFav } = useContext(FavouriteContext);
     const { allProperties = [] } = useContext(PropertyContext);
+    const [confirmedModel, setConfirmedModal] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
 
 
     useEffect(() => {
@@ -37,9 +41,8 @@ export default function DashboardPage() {
 
 
     const userPosted = useMemo(() => {
-        return []
-        // if (!user) return [];
-        // return allProperties.filter((p) => Number(p.agentId) === Number(user.id));
+        if (!user) return [];
+        return allProperties?.filter((p) => Number(p?.userId) === Number(user?.id));
     }, [allProperties, user]);
 
     // Enquiry
@@ -85,11 +88,13 @@ export default function DashboardPage() {
                 variables,
             });
 
-
-            console.log(res)
-            if (res.status === 200) {
-                await refreshUser();
+            
+            if (res?.data?.errors) {
+                FailedToast("Error in Changing !");
             }
+
+            SuccessToast("Profile Updated Successfully");
+            await refreshUser();
             setEditingProfile(false);
             setEditingProfile(false);
 
@@ -100,9 +105,16 @@ export default function DashboardPage() {
         }
     };
 
-    // "Syntax Error: Expected \":\", found Name \"phone\"."
     return (
         <>
+            {
+                confirmedModel &&
+                <ConfirmCard
+                    setConfirmDelete={setConfirmDelete}
+                    setConfirmedModal={setConfirmedModal}
+                />
+            }
+
             <Navbar />
             <div className="dashboard">
                 <div className="dashboard-inner">
@@ -148,6 +160,10 @@ export default function DashboardPage() {
                                         property={p}
                                         favorites={favorites}
                                         refreshFav={refreshFav}
+                                        confirmDelete={confirmDelete}
+                                        setConfirmDelete={setConfirmDelete}
+                                        confirmedModel={confirmedModel}
+                                        setConfirmedModal={setConfirmedModal}
                                     />
                                 ))}
                             </div>
@@ -175,6 +191,10 @@ export default function DashboardPage() {
                                         property={p}
                                         favorites={favorites}
                                         refreshFav={refreshFav}
+                                        confirmDelete={confirmDelete}
+                                        setConfirmDelete={setConfirmDelete}
+                                        confirmedModel={confirmedModel}
+                                        setConfirmedModal={setConfirmedModal}
                                     />
                                 ))}
                             </div>

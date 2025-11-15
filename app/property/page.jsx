@@ -12,154 +12,12 @@ import { FavouriteContext } from "../FavouriteContext.jsx";
 function PropertyList() {
 
     const { favorites, setfavorites, refreshFav } = useContext(FavouriteContext);
-
-    // const properties = [
-    //     {
-    //         id: 1,
-    //         title: 'Luxury Villa in Bangalore',
-    //         location: 'Whitefield, Bangalore',
-    //         price: '₹1.2 Cr',
-    //         pricePerSqFt: '₹8,500/sq.ft',
-    //         area: '1,400 sq.ft',
-    //         bhk: '3 BHK',
-    //         status: 'Ready to Move',
-    //         featured: true,
-    //         agent: 'John Properties',
-    //         image: 'http://static.photos/real-estate/640x360/1',
-    //         agentImage: 'http://static.photos/people/200x200/2'
-    //     },
-    //     {
-    //         id: 2,
-    //         title: 'Modern Apartment in Mumbai',
-    //         location: 'Bandra West, Mumbai',
-    //         price: '₹2.5 Cr',
-    //         pricePerSqFt: '₹15,000/sq.ft',
-    //         area: '1,650 sq.ft',
-    //         bhk: '2 BHK',
-    //         status: 'Under Construction',
-    //         featured: false,
-    //         agent: 'Elite Realtors',
-    //         image: 'http://static.photos/real-estate/640x360/2',
-    //         agentImage: 'http://static.photos/people/200x200/3'
-    //     },
-    //     {
-    //         id: 3,
-    //         title: 'Premium Villa in Goa',
-    //         location: 'Candolim, Goa',
-    //         price: '₹3.8 Cr',
-    //         pricePerSqFt: '₹6,500/sq.ft',
-    //         area: '5,800 sq.ft',
-    //         bhk: '4 BHK',
-    //         status: 'Ready to Move',
-    //         featured: false,
-    //         agent: 'Sunshine Properties',
-    //         image: 'http://static.photos/real-estate/640x360/3',
-    //         agentImage: 'http://static.photos/people/200x200/4'
-    //     },
-    //     {
-    //         id: 3,
-    //         title: 'Premium Villa in Goa',
-    //         location: 'Candolim, Goa',
-    //         price: '₹3.8 Cr',
-    //         pricePerSqFt: '₹6,500/sq.ft',
-    //         area: '5,800 sq.ft',
-    //         bhk: '4 BHK',
-    //         status: 'Ready to Move',
-    //         featured: false,
-    //         agent: 'Sunshine Properties',
-    //         image: 'http://static.photos/real-estate/640x360/3',
-    //         agentImage: 'http://static.photos/people/200x200/4'
-    //     },
-    //     {
-    //         id: 3,
-    //         title: 'Premium Villa in Chennai',
-    //         location: 'Chennai',
-    //         price: '₹3.8 Cr',
-    //         pricePerSqFt: '₹6,500/sq.ft',
-    //         area: '5,800 sq.ft',
-    //         bhk: '4 BHK',
-    //         status: 'Ready to Move',
-    //         featured: false,
-    //         agent: 'Sunshine Properties',
-    //         image: 'http://static.photos/real-estate/640x360/3',
-    //         agentImage: 'http://static.photos/people/200x200/4'
-    //     },
-    //     {
-    //         id: 3,
-    //         title: 'Premium Villa in Port Bular',
-    //         location: 'Port Bular',
-    //         price: '₹3.8 Cr',
-    //         pricePerSqFt: '₹6,500/sq.ft',
-    //         area: '5,800 sq.ft',
-    //         bhk: '4 BHK',
-    //         status: 'Ready to Move',
-    //         featured: false,
-    //         agent: 'Sunshine Properties',
-    //         image: 'http://static.photos/real-estate/640x360/3',
-    //         agentImage: 'http://static.photos/people/200x200/4'
-    //     },
-    //     {
-    //         id: 3,
-    //         title: 'Premium Villa in kashipur',
-    //         location: 'kashipur',
-    //         price: '₹3.8 Cr',
-    //         pricePerSqFt: '₹6,500/sq.ft',
-    //         area: '5,800 sq.ft',
-    //         bhk: '4 BHK',
-    //         status: 'Ready to Move',
-    //         featured: false,
-    //         agent: 'Sunshine Properties',
-    //         image: 'http://static.photos/real-estate/640x360/3',
-    //         agentImage: 'http://static.photos/people/200x200/4'
-    //     },
-    //     {
-    //         id: 3,
-    //         title: 'Premium Villa in Ramnagar',
-    //         location: 'Ramnagar',
-    //         price: '₹3.8 Cr',
-    //         pricePerSqFt: '₹6,500/sq.ft',
-    //         area: '5,800 sq.ft',
-    //         bhk: '4 BHK',
-    //         status: 'Ready to Move',
-    //         featured: false,
-    //         agent: 'Sunshine Properties',
-    //         image: 'http://static.photos/real-estate/640x360/3',
-    //         agentImage: 'http://static.photos/people/200x200/4'
-    //     },
-    //     {
-    //         id: 3,
-    //         title: 'Premium Villa in Anjali',
-    //         location: 'Anajli',
-    //         price: '₹3.8 Cr',
-    //         pricePerSqFt: '₹6,500/sq.ft',
-    //         area: '5,800 sq.ft',
-    //         bhk: '4 BHK',
-    //         status: 'Ready to Move',
-    //         featured: false,
-    //         agent: 'Sunshine Properties',
-    //         image: 'http://static.photos/real-estate/640x360/3',
-    //         agentImage: 'http://static.photos/people/200x200/4'
-    //     },
-    //     {
-    //         id: 3,
-    //         title: 'Premium Villa in Himanshu',
-    //         location: 'Himanshu',
-    //         price: '₹3.8 Cr',
-    //         pricePerSqFt: '₹6,500/sq.ft',
-    //         area: '5,800 sq.ft',
-    //         bhk: '4 BHK',
-    //         status: 'Ready to Move',
-    //         featured: false,
-    //         agent: 'Sunshine Properties',
-    //         image: 'http://static.photos/real-estate/640x360/3',
-    //         agentImage: 'http://static.photos/people/200x200/4'
-    //     }
-    // ];
-
     const { allProperties } = useContext(PropertyContext);
-
     const [query, setQuery] = useState("");
     const [startsearch, setStartSearch] = useState(false);
+    const [confirmedModel, setConfirmedModal] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+
 
     const filteredProperties = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -176,6 +34,15 @@ function PropertyList() {
 
     return (
         <>
+
+            {
+                confirmedModel &&
+                <ConfirmCard
+                    setConfirmDelete={setConfirmDelete}
+                    setConfirmedModal={setConfirmedModal}
+                />
+            }
+
             <Navbar />
             <div className="prop-section">
                 <div className="prop-sectionHeader">
@@ -206,16 +73,20 @@ function PropertyList() {
 
                 <div className="prop-propertyGrid">
                     {
-                        filteredProperties.length === 0 ? (
+                        filteredProperties?.length === 0 ? (
                             <p style={{ padding: 20, color: "#6b7280" }}>No properties match your search.</p>
                         ) : (
-                            filteredProperties.map((property, index) => (
+                            filteredProperties?.map((property, index) => (
                                 <PropertyCard
                                     index={index}
                                     property={property}
                                     favorites={favorites}
                                     setfavorites={setfavorites}
                                     refreshFav={refreshFav}
+                                    confirmDelete={confirmDelete}
+                                    setConfirmDelete={setConfirmDelete}
+                                    confirmedModel={confirmedModel}
+                                    setConfirmedModal={setConfirmedModal}
                                 />
                             ))
                         )

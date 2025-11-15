@@ -8,6 +8,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { LogIn } from 'react-feather';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/UserContext';
+import { SuccessToast } from '@/components/utils/toast';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -39,10 +40,9 @@ export default function Login() {
         return;
       }
 
+      SuccessToast("Login Successful");
       await refreshUser();
-      router.push("/"); // or your dashboard
-      // router.refresh();
-      // window.location.href = "/";
+      router.push("/"); 
 
     } catch (err) {
       setError(err.message);

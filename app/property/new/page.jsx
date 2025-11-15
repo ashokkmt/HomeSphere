@@ -1,14 +1,20 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "../../../styles/newproperty.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Check, X } from "react-feather";
+import { useAuth } from "@/app/UserContext";
+import { PropertyContext } from "@/app/propertyContext";
+import { FailedToast, SuccessToast } from "@/components/utils/toast";
 
 export default function NewProperty() {
+
+  const { user } = useAuth();
+  const { refreshProperties } = useContext(PropertyContext);
+
   // form fields
-  // const [propertyId, setPropertyId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -159,7 +165,7 @@ export default function NewProperty() {
 
       // ✅ Step 3: Build input dynamically
       const input = {
-        userId: 1, // or dynamically assign later
+        userId: user?.id,
         title: title.trim(),
         description: description?.trim() || "",
         price: parseFloat(price.trim()),
@@ -173,9 +179,7 @@ export default function NewProperty() {
           country: country.trim(),
         },
         images: imagesMeta,
-
-        //Amenities yhi pe dalni hai naa
-        amenities: amenities || []
+        amenityIds: amenities || []
       };
 
       // ✅ Step 4: Include optional fields only if they have values
@@ -212,10 +216,16 @@ export default function NewProperty() {
         variables: { input: cleanInput },
       });
 
-      console.log(res);
+      if (res.data.errors) {
+        console.log(res.data.errors);
+        FailedToast("Something Wrong !");
+        return;
+      }
 
-      // ✅ Step 8: Reset form fields
-      // setPropertyId("");
+      SuccessToast("Property Added Successfully");
+      refreshProperties();
+
+      //  Reset form fields
       setTitle("");
       setDescription("");
       setPrice("");
@@ -242,20 +252,17 @@ export default function NewProperty() {
 
   function toggleAmenity(id) {
     setAmenities(prev => {
-      const exists = prev.some(a => a.id === id);
+      const exists = prev.some(aid => aid === id);
       return exists
-        ? prev.filter(a => a.id !== id)
-        : [...prev, { id }];
+        ? prev.filter(aid => aid !== id)
+        : [...prev, id];
     });
   }
 
 
-
-
-  // ye console hora hai jha bhe bjna ho ye bjna -> amenities
   useEffect(() => {
-    console.log("selected amenities:", amenities);
-  }, [amenities]);
+    console.log(stateVal, street, city, country);
+  }, [stateVal, street, city, country])
 
 
   return (
@@ -596,7 +603,7 @@ export default function NewProperty() {
                         role="button"
                         onClick={(e) => toggleAmenity(amenity?.id)}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleAmenity(amenity.id); }}
-                        className={`amenity-p ${amenities.some(a => a.id === amenity.id) ? "active" : ""}`}
+                        className={`amenity-p ${amenities.some(aid => aid === amenity.id) ? "active" : ""}`}
                       >
                         {amenity.name}
                       </p>
