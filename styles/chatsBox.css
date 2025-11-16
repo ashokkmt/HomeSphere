@@ -1,5 +1,4 @@
-
-.pq-chat-overlay {
+.chatOverlay {
     position: fixed;
     top: 0;
     right: -100%;
@@ -10,11 +9,10 @@
     z-index: 500;
 }
 
-.pq-chat-overlay.active {
+.activeOverlay {
     right: 0;
     animation: slideleft 0.5s ease forwards;
 }
-
 
 @keyframes slideleft {
     from {
@@ -28,8 +26,7 @@
     }
 }
 
-
-.pq-chat-overlay.closing {
+.chatOverlay.closingOverlay {
     animation: slideright 0.5s ease forwards;
 }
 
@@ -45,9 +42,7 @@
     }
 }
 
-
-/* Chat box panel */
-.pq-chat-box {
+.chatBox {
     width: 100%;
     height: 80%;
     background: #ffffff;
@@ -55,58 +50,42 @@
     box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.25);
     padding: 1rem;
     margin-right: 1rem;
-    margin-bottom: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     gap: 0.75rem;
 }
 
-/* Chat header */
-.pq-chat-header {
+.chatHeader {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.75rem;
     border-bottom: 1px solid #e5e7eb;
     padding-bottom: 0.5rem;
 }
 
-.pq-chat-header h4 {
-    margin: 0;
-}
-
-.pq-chat-header p {
-    margin: 0.25rem 0 0;
-}
-
-/* Close button */
-.pq-chat-close {
+.closeBtn {
     background: transparent;
-    border: none;
     cursor: pointer;
-    font-size: 1.1rem;
     padding: .2rem;
     border-radius: 9999px;
     color: #717171;
 }
 
-.pq-chat-close:hover {
+.closeBtn:hover {
     background: #f3f4f6;
 }
 
-/* Chat body */
-.pq-chat-body {
+.chatBody {
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
     flex: 1;
-    height: 100%;
     overflow-y: scroll;
     scrollbar-width: none;
     scroll-behavior: smooth;
 }
 
-.chats {
+.chatWrapper {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -114,8 +93,7 @@
     overflow-y: hidden;
 }
 
-/* Chat footer */
-.pq-chat-footer {
+.chatFooter {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -123,7 +101,7 @@
     padding-top: 1rem;
 }
 
-.pq-chat-input {
+.chatInput {
     flex: 1;
     padding: 0.5rem 0.75rem;
     border-radius: 10px;
@@ -131,15 +109,30 @@
     font-size: 0.9rem;
 }
 
-.pq-chat-input:focus {
+.chatInput:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 1px rgba(91, 108, 255, 0.35);
 }
 
-.pq-chat-send {
+.sendBtn {
     padding-inline: 0.9rem;
     white-space: nowrap;
     box-shadow: none;
 }
 
+.chatText {
+    margin: .3rem 0;
+}
+
+.leftAlign {
+    text-align: left;
+}
+
+.rightAlign {
+    text-align: right;
+}
+
+.subText {
+    margin-top: 3px;
+}

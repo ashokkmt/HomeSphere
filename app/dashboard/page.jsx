@@ -13,6 +13,7 @@ import PropertyCard from "@/components/PropertyCard";
 import axios from "axios";
 import ConfirmCard from "@/components/ConfirmCard";
 import { FailedToast, SuccessToast } from "@/components/utils/toast";
+import ChatsBox from "@/components/ChatsBox";
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -46,7 +47,59 @@ export default function DashboardPage() {
     }, [allProperties, user]);
 
     // Enquiry
-    const [enquiries] = useState([]);
+    const [enquiries, setEnquiries] = useState([]);
+    const [showChat, setShowChat] = useState(false);
+    const [propID, setpropID] = useState("");
+    const [buyerID, setBuyerID] = useState("");
+
+
+    useEffect(() => {
+        if (user) {
+            fetchSellerEnquiries();
+        }
+    }, [user]);
+
+
+    async function fetchSellerEnquiries() {
+        try {
+            const query = `
+                query GetAllInquiries {
+                    getAllInquiries {
+                    id
+                    createdAt
+                    buyer { id fullName }
+                    seller { id fullName }
+                    messages {
+                        id
+                        message
+                        sender { id }
+                    }
+                    property { 
+                        id 
+                        title 
+                    }
+                }
+            }`;
+
+            const res = await axios.post("http://localhost:3000/api/graphql", {
+                query
+            });
+
+            const all = res?.data?.data?.getAllInquiries || [];
+
+            // Filter only inquiries where THIS USER is the seller
+            const sellerEnquiries = all.filter(
+                (inq) => Number(inq.seller?.id) === Number(user?.id)
+            );
+
+            console.log("Seller enquiries →", sellerEnquiries);
+
+            setEnquiries(sellerEnquiries);
+        } catch (err) {
+            console.log("Error loading enquiries:", err);
+        }
+    }
+
 
     // profile edit modal simple state
     const [editingProfile, setEditingProfile] = useState(false);
@@ -103,6 +156,15 @@ export default function DashboardPage() {
         } finally {
             setSavingProfile(false);
         }
+    };
+
+
+    const closeChat = () => {
+        document.querySelector('.chatOverlay').classList.add('closing');
+
+        setTimeout(() => {
+            setShowChat(false);
+        }, 500); // match animation duration
     };
 
     return (
@@ -215,57 +277,96 @@ export default function DashboardPage() {
                             </div>
 
                             <div className="enquiries-list">
-                                {enquiries.length === 0 ? (
-                                    <div className="empty-card small">
-                                        <p>No enquiries yet</p>
-                                        <p className="muted-sm">Leads will appear here when someone contacts you about a property.</p>
-                                    </div>
-                                ) : enquiries.map(e => (
-                                    <div key={e.id} className="enquiry">
-                                        <div className="enq-left">
-                                            <div className="enq-sender">{e.name}</div>
-                                            <div className="muted-sm">{e.message}</div>
+                                {
+                                    enquiries.length === 0 ? (
+                                        <div className="empty-card small">
+                                            <p>No enquiries yet</p>
+                                            <p className="muted-sm">Leads will appear here when someone contacts you about a property.</p>
                                         </div>
-                                        <div className="enq-actions">
-                                            <button className="btn small" onClick={() => router.push(`/property/${e.propertyId}`)}>View</button>
-                                            <button className="btn small ghost">Reply</button>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ) : (
+                                        enquiries.map((e) =>
+                                        (
+                                            <div key={e.id} className="enquiry">
+                                                <div className="enq-left">
+                                                    <div className="enq-sender">{e.buyer.fullName}</div>
+                                                    <div className="muted-sm">
+                                                        {e.messages.length > 0
+                                                            ? e.messages[e.messages.length - 1].message
+                                                            : "New enquiry started"}
+                                                    </div>
+                                                </div>
+
+                                                <div className="enq-actions">
+                                                    <button
+                                                        className="btn small"
+                                                        onClick={() => router.push(`/property/${e.property.id}`)}
+                                                    >
+                                                        View
+                                                    </button>
+
+                                                    <button
+                                                        className="btn small ghost"
+                                                        onClick={() => {
+                                                            setBuyerID(e.buyer.id)
+                                                            setpropID(e.property.id)
+                                                            setShowChat(true)
+                                                        }}
+                                                    >
+                                                        Reply
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )
+                                }
                             </div>
                         </div>
+
                     </section>
 
                 </div>
 
+                {
+                    showChat &&
+                    <ChatsBox
+                        showChat={showChat}
+                        closeChat={closeChat}
+                        seller={user.id}
+                        propertyId={propID || ""}
+                        buyerId={buyerID || ""}
+                    />
+                }
+
                 {/* profile edit  */}
-                {editingProfile && (
-                    <div className="modal-backdrop" onClick={() => setEditingProfile(false)}>
-                        <div className="modal" onClick={(e) => e.stopPropagation()}>
-                            <h3>Edit profile</h3>
-                            <div className="dash-formGroup">
-                                <label>Full name </label>
-                                <input value={profileName} onChange={(e) => setProfileName(e.target.value)} />
-                            </div>
-                            <div className="dash-formGroup">
-                                <label>Email </label>
-                                <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
-                            </div>
-                            <div className="dash-formGroup">
-                                <label>Phone </label>
-                                <input type="number" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                            </div>
-                            <div className="dash-formGroup">
-                                <label>Role</label>
-                                <input type="text" value={role} onChange={(e) => setRole(e.target.value)} />
-                            </div>
-                            <div className="modal-actions">
-                                <button className="btn" onClick={() => setEditingProfile(false)}>Cancel</button>
-                                <button className="btn primary" onClick={handleSaveProfile} disabled={savingProfile}>{savingProfile ? "Saving..." : "Save"}</button>
+                {
+                    editingProfile && (
+                        <div className="modal-backdrop" onClick={() => setEditingProfile(false)}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                <h3>Edit profile</h3>
+                                <div className="dash-formGroup">
+                                    <label>Full name </label>
+                                    <input value={profileName} onChange={(e) => setProfileName(e.target.value)} />
+                                </div>
+                                <div className="dash-formGroup">
+                                    <label>Email </label>
+                                    <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
+                                </div>
+                                <div className="dash-formGroup">
+                                    <label>Phone </label>
+                                    <input type="number" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                                </div>
+                                <div className="dash-formGroup">
+                                    <label>Role</label>
+                                    <input type="text" value={role} onChange={(e) => setRole(e.target.value)} />
+                                </div>
+                                <div className="modal-actions">
+                                    <button className="btn" onClick={() => setEditingProfile(false)}>Cancel</button>
+                                    <button className="btn primary" onClick={handleSaveProfile} disabled={savingProfile}>{savingProfile ? "Saving..." : "Save"}</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )
+                }
             </div>
             <Footer />
         </>

@@ -225,7 +225,7 @@ function PropertyDetail() {
 
 
   const closeChat = () => {
-    document.querySelector('.pq-chat-overlay').classList.add('closing');
+    document.querySelector('.chatOverlay').classList.add('closing');
 
     setTimeout(() => {
       setShowChat(false);

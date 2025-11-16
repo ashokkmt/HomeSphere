@@ -11,7 +11,6 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
   const [displayedChats, setDisplayedChats] = useState([]);
   const [inquiryId, setInquiryId] = useState(null);
 
-  // Load inquiry + messages
   useEffect(() => {
     if (showChat) {
       loadExistingInquiry();
@@ -37,31 +36,24 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
           }
         }`;
 
-      const res = await axios.post("http://localhost:3000/api/graphql", {
-        query,
-      });
+      const res = await axios.post("http://localhost:3000/api/graphql", { query });
 
       const inquiries = res?.data?.data?.getAllInquiries || [];
 
       const existing = inquiries.find(
-        (inq) =>
-          inq?.buyer?.id === buyerId &&
-          inq?.property?.id === propertyId
+        (inq) => inq?.buyer?.id === buyerId && inq?.property?.id === propertyId
       );
 
       if (existing) {
-        console.log("Existing inquiry found:", existing.id);
         setInquiryId(existing.id);
         setDisplayedChats(existing.messages || []);
       } else {
-        console.log("No existing inquiry for this buyer + property");
         setInquiryId(null);
         setDisplayedChats([]);
       }
 
       return existing?.id ?? null;
     } catch (err) {
-      console.error("loadExistingInquiry error:", err.response?.data || err);
       setInquiryId(null);
       return null;
     }
@@ -76,12 +68,10 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
     try {
       let eid = inquiryId;
 
-      // nhi pta inquiry, check once
       if (!eid) {
         eid = await loadExistingInquiry();
       }
 
-      // inquiry ha
       if (eid) {
         const mutation = `
           mutation SendInquiryMessage {
@@ -97,14 +87,7 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
             }
           }`;
 
-        const sendRes = await axios.post(
-          "http://localhost:3000/api/graphql",
-          { query: mutation }
-        );
-
-        if (sendRes.data?.errors) {
-          console.error("sendInquiryMessage errors:", sendRes.data.errors);
-        }
+        await axios.post("http://localhost:3000/api/graphql", { query: mutation });
 
         const getMsgsQuery = `
           query GetInquiryMessages {
@@ -115,21 +98,15 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
             }
           }`;
 
-        const msgsRes = await axios.post(
-          "http://localhost:3000/api/graphql",
-          { query: getMsgsQuery }
-        );
-
-        if (msgsRes.data?.errors) {
-          console.error("getInquiryMessages errors:", msgsRes.data.errors);
-        }
+        const msgsRes = await axios.post("http://localhost:3000/api/graphql", {
+          query: getMsgsQuery,
+        });
 
         setDisplayedChats(msgsRes?.data?.data?.getInquiryMessages || []);
         setChat("");
         return;
       }
 
-      // no inquiry
       const addMutation = `
         mutation AddInquiry {
           addInquiry(
@@ -145,23 +122,11 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
           }
         }`;
 
-      const addRes = await axios.post(
-        "http://localhost:3000/api/graphql",
-        { query: addMutation }
-      );
-
-      if (addRes.data?.errors) {
-        console.error("addInquiry errors:", addRes.data.errors);
-        return;
-      }
+      const addRes = await axios.post("http://localhost:3000/api/graphql", {
+        query: addMutation,
+      });
 
       const newId = addRes?.data?.data?.addInquiry?.id;
-      console.log("New inquiry created:", newId);
-
-      if (!newId) {
-        console.error("addInquiry returned no id:", addRes.data);
-        return;
-      }
 
       setInquiryId(newId);
 
@@ -174,41 +139,30 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
           }
         }`;
 
-      const msgsRes = await axios.post(
-        "http://localhost:3000/api/graphql",
-        { query: getMsgsQuery }
-      );
-
-      if (msgsRes.data?.errors) {
-        console.error("getInquiryMessages errors:", msgsRes.data.errors);
-      }
+      const msgsRes = await axios.post("http://localhost:3000/api/graphql", {
+        query: getMsgsQuery,
+      });
 
       setDisplayedChats(msgsRes?.data?.data?.getInquiryMessages || []);
       setChat("");
-    } catch (err) {
-      console.error("sendText error:", err.response?.data || err);
-    }
+    } catch (err) { }
   };
 
   return (
-    <div className={`pq-chat-overlay ${showChat ? "active" : ""}`}>
-      <div className="pq-chat-box">
-        <div className="pq-chat-header">
+    <div className={`chatOverlay ${showChat ? "activeOverlay" : ""}`}>
+      <div className="chatBox">
+        <div className="chatHeader">
           <div>
             <h4>Chat with {seller?.fullName || "Seller"}</h4>
-            <p className="pq-small">Ask anything about this property.</p>
+            <p className="subText">Ask anything about this property.</p>
           </div>
-          <ArrowRight
-            size={35}
-            onClick={closeChat}
-            className="pq-chat-close"
-          />
+          <ArrowRight size={35} onClick={closeChat} className="closeBtn" />
         </div>
 
-        <div className="chats">
-          <div className="pq-chat-body">
+        <div className="chatWrapper">
+          <div className="chatBody">
             {displayedChats.length === 0 ? (
-              <p className="pq-text left">
+              <p className="chatText leftAlign">
                 Feel free to chat with {seller?.fullName || "Seller"}
               </p>
             ) : (
@@ -216,7 +170,7 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
                 {displayedChats.map((msg) => (
                   <p
                     key={msg.id}
-                    className={`pq-text ${msg?.sender?.id === buyerId ? "left" : "right"
+                    className={`chatText ${msg?.sender?.id === buyerId ? "leftAlign" : "rightAlign"
                       }`}
                   >
                     {msg?.message}
@@ -226,18 +180,15 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
             )}
           </div>
 
-          <div className="pq-chat-footer">
+          <div className="chatFooter">
             <input
               type="text"
               placeholder="Type your message..."
-              className="pq-chat-input"
+              className="chatInput"
               value={chat}
               onChange={(e) => setChat(e.target.value)}
             />
-            <button
-              onClick={sendText}
-              className="pq-btn-primary pq-chat-send"
-            >
+            <button onClick={sendText} className="sendBtn">
               Send
             </button>
           </div>
