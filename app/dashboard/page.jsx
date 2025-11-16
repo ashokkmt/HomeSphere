@@ -14,6 +14,7 @@ import axios from "axios";
 import ConfirmCard from "@/components/ConfirmCard";
 import { FailedToast, SuccessToast } from "@/components/utils/toast";
 import ChatsBox from "@/components/ChatsBox";
+import '../../styles/chatsBox.css';
 
 export default function DashboardPage() {
     const router = useRouter();
