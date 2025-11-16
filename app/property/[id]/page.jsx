@@ -15,6 +15,7 @@ import { MapIcons } from "@/components/utils/iconMap.js";
 import { useAuth } from "@/app/UserContext.jsx";
 import { FavouriteContext } from "@/app/FavouriteContext.jsx";
 import { FailedToast, SuccessToast } from "@/components/utils/toast.js";
+import ChatsBox from "@/components/ChatsBox.jsx";
 
 
 function PropertyDetail() {
@@ -397,7 +398,7 @@ function PropertyDetail() {
               <div className="pq-card-agent">
                 <h3>Detailed Description</h3>
                 <div className="pq-text-block">
-                  <p>{currproperty?.description} Lorem ipsum dolor sit, amet consectetur adipisicing elit. Corrupti alias perferendis ipsum aut commodi tempore quasi nisi odio! Soluta earum vitae ea atque reiciendis quibusdam adipisci? Incidunt aliquam quas doloremque.</p>
+                  <p>{currproperty?.description} </p>
                 </div>
               </div>
             </aside>
@@ -425,46 +426,13 @@ function PropertyDetail() {
 
         {
           showChat && (
-            <div className={`pq-chat-overlay ${showChat ? "active" : ""}`}>
-              <div className="pq-chat-box">
-                <div className="pq-chat-header">
-                  <div>
-                    <h4>Chat with {seller?.fullName || "Seller"}</h4>
-                    <p className="pq-small">
-                      Ask anything about this property.
-                    </p>
-                  </div>
-                  <ArrowRight
-                    size={35}
-                    onClick={() => closeChat()}
-                    className="pq-chat-close"
-                  />
-                </div>
-
-                <div className="chats">
-                  <div className="pq-chat-body">
-                    <p className="pq-text left">
-                      Hi! 👋
-                    </p>
-                    <p className="pq-text right">
-                      Hey! 👋
-                    </p>
-
-                  </div>
-
-                  <div className="pq-chat-footer">
-                    <input
-                      type="text"
-                      placeholder="Type your message..."
-                      className="pq-chat-input"
-                    />
-                    <button className="pq-btn-primary pq-chat-send">
-                      Send
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ChatsBox
+              showChat={showChat}
+              closeChat={closeChat}
+              seller={seller}
+              propertyId={Number(id)}
+              buyerId={user?.id}
+            />
           )
         }
 
