@@ -105,7 +105,7 @@ export default function Navbar() {
       <div className="navContainer">
         <div className="navContent">
           <div className="navLeft">
-            <div className="logo">
+            <div onClick={()=> router.push('/')} className="logo">
               <i data-feather="home" className="logoIcon" ></i>
               <span className="logoText">HomeSphere</span>
             </div>

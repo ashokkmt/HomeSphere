@@ -5,9 +5,10 @@ import Footer from "../../components/Footer.jsx";
 import "../../styles/propertypage.css"
 import PropertyCard from "../../components/PropertyCard.jsx";
 import { Search } from "react-feather";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { PropertyContext } from "../propertyContext.jsx";
 import { FavouriteContext } from "../FavouriteContext.jsx";
+import { useSearchParams } from "next/navigation.js";
 
 function PropertyList() {
 
@@ -17,17 +18,27 @@ function PropertyList() {
     const [startsearch, setStartSearch] = useState(false);
     const [confirmedModel, setConfirmedModal] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
+    const search = useSearchParams();
+    const city = search.get("city");
+
+
+    useEffect(() => {
+        if (city) {
+            setQuery(city);
+        }
+    }, [])
 
 
     const filteredProperties = useMemo(() => {
         const q = query.trim().toLowerCase();
         if (!q) return allProperties;
         return allProperties.filter((p) => {
-            const location = p.address.city + ", " + p.address.state;
+            const cityLoc = p.address.city;
+            const stateLoc = p.address.state;
             return (
-                (p.title && p.title.toLowerCase().includes(q)) ||
-                (p.location && location.toLowerCase().includes(q)) ||
-                (p.agent && p.agentId.toLowerCase().includes(q))  // agent ka name ayega yaha pe ok.... p.agentName.tolowerCase().includes(q) krke ok
+                (p?.title && p.title.toLowerCase().includes(q)) ||
+                (p?.address?.city && cityLoc.toLowerCase().includes(q)) ||
+                (p?.address?.state && stateLoc.toLowerCase().includes(q))  // agent ka name ayega yaha pe ok.... p.agentName.tolowerCase().includes(q) krke ok
             );
         });
     }, [startsearch, query === ""]);

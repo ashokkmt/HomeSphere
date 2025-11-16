@@ -88,7 +88,7 @@ export default function DashboardPage() {
                 variables,
             });
 
-            
+
             if (res?.data?.errors) {
                 FailedToast("Error in Changing !");
             }

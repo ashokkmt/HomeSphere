@@ -95,3 +95,12 @@
 .prop-faPrimaryBtn:hover {
     background: #4338ca;
 }
+
+
+.searchCity {
+    cursor: pointer;
+}
+
+.searchCity:hover {
+    color: #9ca3af;
+}

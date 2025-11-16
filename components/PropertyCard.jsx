@@ -136,14 +136,13 @@ export default function PropertyCard({
       });
 
       if (res?.data?.errors) {
-        console.log(error)
-        FailedToast("Remove Property Favorites !!");
+        FailedToast("Remove Property from Favorites !!");
         return;
       }
 
       SuccessToast("Property Deleted Successfully");
       console.log(res?.data?.data);
-      await refreshProperties()
+      refreshProperties()
     } catch (error) {
       console.log(error);
     } finally {

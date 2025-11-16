@@ -3,24 +3,32 @@
 import Navbar from "../../../components/Navbar.jsx";
 import Footer from "../../../components/Footer";
 import Head from 'next/head';
-import { Briefcase, Calendar, Camera, CheckCircle, ChevronLeft, ChevronRight, Clock, Compass, Droplet, Heart, Home, Layers, Mail, MapPin, MessageSquare, Phone, Share2, Square } from 'react-feather';
+import { ArrowLeft, ArrowRight, Calendar, Camera, ChevronLeft, ChevronRight, Compass, Droplet, Heart, Home, Layers, MapPin, MessageSquare, Share2, Square, X } from 'react-feather';
 import '../../../styles/property.id.css';
 import feather from 'feather-icons'
 import { useContext, useEffect, useRef, useState } from 'react';
 import PropertyCard from '../../../components/PropertyCard.jsx';
 import { PropertyContext } from "@/app/propertyContext.jsx";
-import { useParams } from "next/navigation.js";
+import { useParams, useRouter } from "next/navigation.js";
 import axios from "axios";
 import { MapIcons } from "@/components/utils/iconMap.js";
+import { useAuth } from "@/app/UserContext.jsx";
+import { FavouriteContext } from "@/app/FavouriteContext.jsx";
+import { FailedToast, SuccessToast } from "@/components/utils/toast.js";
 
 
 function PropertyDetail() {
 
   const [currproperty, setCurrproperty] = useState({})
-  const [currAgent, setCurrAgent] = useState({})
+  const [seller, setSeller] = useState({})
+  const { user } = useAuth();
   const { allProperties } = useContext(PropertyContext);
+  const { favorites, refreshFav } = useContext(FavouriteContext);
   const { id } = useParams();
   const slideImage = useRef(null);
+  const router = useRouter();
+  const [showChat, setShowChat] = useState(false);
+
 
 
   useEffect(() => {
@@ -65,25 +73,39 @@ function PropertyDetail() {
       setCurrproperty(res.data.data.getPropertyById);
 
 
-      if (res?.data?.data?.getPropertyById?.agentId) {
-        const agentQuery = `query GetAgentById {
-          getAgentById(id: 1) {
-            id
-            userId
-            agency
-            licenseNo
-            user {
-              id
+      if (res?.data?.data?.getPropertyById?.userId) {
+        const userId = Number(res?.data?.data?.getPropertyById?.userId);
+
+        const UerQuery = `
+          query GetUserById($id: Int!) {
+            getUserById(id: $id) {
               email
               fullName
               phone
-              role
             }
           }
-        }`
-        const agentDetail = await axios.post("http://localhost:3000/api/graphql", { query: agentQuery });
-        setCurrAgent(agentDetail?.data?.data?.getAgentById)
+        `;
+
+        try {
+          const agentDetail = await axios.post("http://localhost:3000/api/graphql",
+            {
+              query: UerQuery,
+              variables: { id: userId },
+            }
+          );
+
+
+          if (agentDetail.data?.errors) {
+            console.error(agentDetail.data.errors);
+            return;
+          }
+
+          setSeller(agentDetail.data?.data?.getUserById);
+        } catch (err) {
+          console.error("Error fetching agent:", err);
+        }
       }
+
     }
 
     fetchcurrpropertydetail();
@@ -93,20 +115,6 @@ function PropertyDetail() {
   useEffect(() => {
     feather.replace();
   }, []);
-
-
-
-  function CountNumberofAvialable(city) {
-    let count = 0;
-    allProperties.forEach((property) => {
-      const propCity = property?.address?.city;
-      if (propCity && city && propCity.toLowerCase() === city.toLowerCase()) {
-        count++;
-      }
-    });
-    return count;
-  }
-
 
 
   function formatIndianNumber(num) {
@@ -143,6 +151,92 @@ function PropertyDetail() {
   };
 
 
+
+  const isFav = Boolean(favorites?.some(fav => Number(fav.propertyId) === Number(id)));
+  const toggleFav = async (userID, propID) => {
+    console.log(isFav, userID, propID)
+    if (isFav) {
+      removeFavouties(userID, propID);
+    } else {
+      addTofavorites(userID, propID);
+    }
+  }
+
+  const addTofavorites = async (userID = null, propId) => {
+    if (!user) {
+      router.push('/auth/login');
+      return;
+    }
+
+    console.log(userID, propId)
+
+    try {
+      const query = `
+        mutation AddFavorite($userId: Int!, $propertyId: Int!) {
+          addFavorite(input: { userId: $userId, propertyId: $propertyId }) {
+            propertyId
+          }
+        }
+      `;
+
+      const res = await axios.post("http://localhost:3000/api/graphql", { query, variables: { userId: Number(userID), propertyId: Number(propId) } });
+      if (res.data.errors) {
+        FailedToast("Some Error Occurs");
+        console.error("GraphQL errors:", JSON.stringify(res.data.errors, null, 2));
+      } else {
+        console.log("GraphQL data:", res.data.data);
+        SuccessToast("Added To Favorites");
+      }
+
+      refreshFav();
+
+    } catch (error) {
+      console.error("Request error:", error.response?.data || error.message || error);
+    }
+  };
+
+  const removeFavouties = async (userId, propId) => {
+    if (!user) {
+      router.push('/auth/login');
+      return;
+    }
+
+    try {
+      const query = `
+        mutation RemoveFavorite {
+          removeFavorite(input: { userId: ${userId}, propertyId: ${propId} })
+        }
+      `;
+
+      const res = await axios.post("http://localhost:3000/api/graphql", { query });
+
+      if (res.data.errors) {
+        console.error(res.data.errors);
+        FailedToast("Some Error Occurs");
+      }
+
+      SuccessToast("Remove From Favorites")
+      refreshFav();
+    } catch (error) {
+      console.log(error.message + " This is in removing fav...")
+    }
+  }
+
+
+  const closeChat = () => {
+    document.querySelector('.pq-chat-overlay').classList.add('closing');
+
+    setTimeout(() => {
+      setShowChat(false);
+    }, 500); // match animation duration
+  };
+
+
+  function gotToSearchProperties(city) {
+    console.log(city)
+    router.push(`/property?city=${city}`);
+  }
+
   return (
     <>
       <Head>
@@ -158,9 +252,13 @@ function PropertyDetail() {
           <div className="pq-header-inner">
             <div>
               <div className="pq-breadcrumb">
-                <a>Home</a>
+                <a onClick={() => router.push('/')} className="searchCity">Home</a>
                 <ChevronRight className="pq-chev" />
-                <a>{currproperty.address?.city}</a>
+                <a
+                  className="searchCity"
+                  onClick={() => {
+                    gotToSearchProperties(currproperty?.address?.city)
+                  }} >{currproperty.address?.city}</a>
                 <ChevronRight className="pq-chev" />
                 <span className="pq-current">{currproperty?.propertyType}</span>
               </div>
@@ -171,8 +269,22 @@ function PropertyDetail() {
 
             <div className="pq-header-actions">
               <button className="pq-btn-ghost"><Share2 className="pq-btn-icon" /> Share</button>
-              <button className="pq-btn-ghost"><Heart className="pq-btn-icon" /> Save</button>
-              <button className="pq-btn-primary">Contact Agent</button>
+              <button
+                onClick={() => {
+                  if (!user) {
+                    router.push('/auth/login');
+                  }
+                  else {
+                    toggleFav(user?.id, id);
+                  }
+                }}
+                className="pq-btn-ghost"
+              ><Heart className={`pq-btn-icon ${isFav ? "active" : ""}`}
+                /> Save</button>
+              <button
+                onClick={() => setShowChat(true)}
+                className="pq-btn-primary CSBTN"
+              >Contact Seller</button>
             </div>
           </div>
         </header>
@@ -195,16 +307,6 @@ function PropertyDetail() {
                 <button onClick={() => scrollRight()} className="pq-gallery-nav-right"><ChevronRight /></button>
               </div>
             </div>
-
-            {/* <aside className="pq-thumb-grid">
-              <div className="pq-thumb"> <img src={currproperty?.images?.[0]?.url} alt={currproperty?.images?.[1]?.altText} /></div>
-              <div className="pq-thumb"> <img src={currproperty?.images?.[0]?.url} alt={currproperty?.images?.[1]?.altText} /></div>
-              <div className="pq-thumb"> <img src={currproperty?.images?.[0]?.url} alt={currproperty?.images?.[1]?.altText} /></div>
-              <div className={`pq-thumb pq-more-thumb`}>
-                <img height={"100%"} src="http://static.photos/real-estate/640x360/5" alt="thumb" />
-                <div className="pq-more-overlay">+20 more</div>
-              </div>
-            </aside> */}
           </section>
 
           {/* Details + Sidebar */}
@@ -220,20 +322,15 @@ function PropertyDetail() {
                   <div className="pq-rating">
                     <div className="pq-stars">
                       {
-                        [...Array(5)].map((_, i) => (
-                          <i key={i} data-feather="star" fill={i < 3 ? 'currentColor' : 'none'} stroke="currentColor">
-                          </i>
-                        ))
+                        currproperty?.listingStatus
+                        // [...Array(5)].map((_, i) => (
+                        //   <i key={i} data-feather="star" fill={i < 3 ? 'currentColor' : 'none'} stroke="currentColor">
+                        //   </i>
+                        // ))
                       }
                     </div>
-                    <span className="pq-review-text">4.2 (12 Reviews)</span>
+                    {/* <span className="pq-review-text">4.2 (12 Reviews)</span> */}
                   </div>
-                </div>
-
-                <div className="pq-section">
-                  <h3>Overview</h3>
-                  {/* yaha pe normal chota sa description ayega OK */}
-                  <p className="pq-text">{currproperty?.description}</p>
                 </div>
 
                 <div className="pq-section">
@@ -268,34 +365,16 @@ function PropertyDetail() {
                   </div>
                 </div>
 
-                <div className="pq-tabs-wrap">
-                  <nav className="pq-tabs">
-                    <button className={`pq-tab pq-tab-active`}>Description</button>
-                    <button className="pq-tab">Floor Plans</button>
-                    <button className="pq-tab">Neighborhood</button>
-                    <button className="pq-tab">Reviews</button>
-                  </nav>
-                </div>
-
-                <div className="pq-section">
-                  <h3>Detailed Description</h3>
-                  <div className="pq-text-block">
-                    {/* yaha pe detailed description ayega OK */}
-                    <p>{currproperty?.description}</p>
-                    <p>{currproperty?.description}</p>
-                  </div>
-                </div>
 
                 <div className="pq-section">
                   <h3>Location</h3>
-                  <div className="pq-map-container"><img src="http://static.photos/technology/640x360/6" alt="map" /></div>
                   <p className="pq-text"><strong>Address:</strong> {currproperty?.address?.street}, {currproperty?.address?.city}, {currproperty?.address?.state}, {currproperty?.address?.postalCode} </p>
-                  {/* Yaha neehce wale me landmark ayega jo abhi DB mai nhi hai OK */}
                   <p className="pq-text"><strong>Landmarks:</strong> {currproperty?.address?.street}</p>
                 </div>
 
               </div>
             </div>
+
 
             {/* Sidebar */}
             <aside className="pq-side-col">
@@ -303,60 +382,26 @@ function PropertyDetail() {
                 <div className="pq-agent-head">
                   <img src="http://static.photos/people/200x200/8" alt="Agent" />
                   <div>
-                    <h4>{currAgent?.user?.fullName}</h4>
-                    <p className="pq-small">Property Agent</p>
-                    <div className="pq-stars-small">
-                      {
-                        [...Array(5)].map((_, i) => (
-                          <i key={i} data-feather="star" fill={i < 3 ? 'currentColor' : 'none'} stroke="currentColor">
-                          </i>
-                        ))
-                      }
-                    </div>
+                    <h4>{seller?.fullName}</h4>
+                    <p className="pq-small">{seller?.email}</p>
                   </div>
                 </div>
 
-                <div className="pq-agent-info">
-                  <div><Briefcase /> {currAgent?.agency}</div>
-                  <div><Clock /> Licence No. {currAgent?.licenseNo}</div>
-                  <div><CheckCircle /> Verified Agent</div>
-                </div>
-
                 <div className="pq-agent-actions">
-                  <button className="pq-btn-primary"><Phone /> Call Agent</button>
-                  <button className="pq-btn-ghost"><Mail /> Email Agent</button>
-                  <button className="pq-btn-ghost"><MessageSquare /> WhatsApp</button>
+                  <button
+                    onClick={() => setShowChat(true)}
+                    className="pq-btn-primary"
+                  ><MessageSquare /> Contact Seller</button>
                 </div>
               </div>
-
-              <div className="pq-card">
-                <h4>Schedule a Visit</h4>
-                <div>
-                  <label>Date</label>
-                  <input type="date" className="pq-input" />
+              <div className="pq-card-agent">
+                <h3>Detailed Description</h3>
+                <div className="pq-text-block">
+                  <p>{currproperty?.description} Lorem ipsum dolor sit, amet consectetur adipisicing elit. Corrupti alias perferendis ipsum aut commodi tempore quasi nisi odio! Soluta earum vitae ea atque reiciendis quibusdam adipisci? Incidunt aliquam quas doloremque.</p>
                 </div>
-                <div>
-                  <label>Time</label>
-                  <select className="pq-input">
-                    <option>9:00 AM - 10:00 AM</option>
-                    <option>10:00 AM - 11:00 AM</option>
-                    <option>11:00 AM - 12:00 PM</option>
-                    <option>12:00 PM - 1:00 PM</option>
-                  </select>
-                </div>
-                <button className="pq-btn-primary">Schedule Visit</button>
-              </div>
-
-              <div className="pq-card">
-                <h4>Price Trends in {currproperty?.address?.city}</h4>
-                <div className="pq-price-box">
-                  <div><span>Avg. Price/sq.ft</span><strong>₹{parseInt(currproperty?.price / currproperty?.areaSqft)}</strong></div>
-                  <div><span>Price Change (1Y)</span><strong className="pq-positive">+8.2%</strong></div>
-                  <div><span>Properties Available</span><strong>{CountNumberofAvialable(currproperty?.address?.city)}</strong></div>
-                </div>
-                <p className="pq-small">Property prices in {currproperty?.address?.city} have increased by 8.2% over the last year. The average price per square foot for apartments in this locality is ₹{parseInt(currproperty?.price / currproperty?.areaSqft)}.</p>
               </div>
             </aside>
+
           </section>
 
           {/* Similar Properties */}
@@ -377,6 +422,52 @@ function PropertyDetail() {
             </div>
           </section>
         </main>
+
+        {
+          showChat && (
+            <div className={`pq-chat-overlay ${showChat ? "active" : ""}`}>
+              <div className="pq-chat-box">
+                <div className="pq-chat-header">
+                  <div>
+                    <h4>Chat with {seller?.fullName || "Seller"}</h4>
+                    <p className="pq-small">
+                      Ask anything about this property.
+                    </p>
+                  </div>
+                  <ArrowRight
+                    size={35}
+                    onClick={() => closeChat()}
+                    className="pq-chat-close"
+                  />
+                </div>
+
+                <div className="chats">
+                  <div className="pq-chat-body">
+                    <p className="pq-text left">
+                      Hi! 👋
+                    </p>
+                    <p className="pq-text right">
+                      Hey! 👋
+                    </p>
+
+                  </div>
+
+                  <div className="pq-chat-footer">
+                    <input
+                      type="text"
+                      placeholder="Type your message..."
+                      className="pq-chat-input"
+                    />
+                    <button className="pq-btn-primary pq-chat-send">
+                      Send
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        }
+
       </div>
 
       <Footer />
