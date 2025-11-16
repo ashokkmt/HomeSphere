@@ -16,9 +16,15 @@ model User {
   phone         String?
   role          Role           @default(BUYER)
   favorites     Favorite[]
-  inquiries     Inquiry[]      @relation("buyer_inquiries")
   properties    Property[]
   refreshTokens RefreshToken[]
+
+  // Buyer inquiries
+  inquiries         Inquiry[] @relation("buyer_inquiries")
+  // Seller inquiries (NEW)
+  receivedInquiries Inquiry[] @relation("seller_inquiries")
+
+  sentMessages InquiryMessage[] @relation("UserSentMessages")
 }
 
 model RefreshToken {
@@ -90,15 +96,31 @@ model PropertyAmenity {
 }
 
 model Inquiry {
-  id           Int      @id @default(autoincrement())
-  propertyId   Int
-  buyerId      Int?
-  message      String?
-  contactPhone String?
-  status       String   @default("new")
-  createdAt    DateTime @default(now())
-  buyer        User?    @relation("buyer_inquiries", fields: [buyerId], references: [id])
-  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  id         Int           @id @default(autoincrement())
+  propertyId Int
+  buyerId    Int?
+  sellerId   Int // auto-filled from property.userId
+  status     InquiryStatus @default(OPEN)
+  createdAt  DateTime      @default(now())
+
+  // Relations
+  buyer    User?    @relation("buyer_inquiries", fields: [buyerId], references: [id])
+  seller   User     @relation("seller_inquiries", fields: [sellerId], references: [id])
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  messages InquiryMessage[]
+}
+
+model InquiryMessage {
+  id        Int      @id @default(autoincrement())
+  inquiryId Int
+  senderId  Int
+  message   String
+  createdAt DateTime @default(now())
+
+  inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+
+  sender User @relation("UserSentMessages", fields: [senderId], references: [id])
 }
 
 model Favorite {
@@ -115,4 +137,9 @@ enum Role {
   BUYER
   AGENT
   ADMIN
+}
+
+enum InquiryStatus {
+  OPEN
+  CLOSED
 }
