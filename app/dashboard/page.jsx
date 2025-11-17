@@ -13,8 +13,7 @@ import PropertyCard from "@/components/PropertyCard";
 import axios from "axios";
 import ConfirmCard from "@/components/ConfirmCard";
 import { FailedToast, SuccessToast } from "@/components/utils/toast";
-import ChatsBox from "@/components/ChatsBox";
-import '../../styles/chatsBox.css';
+import DashboardChatsBox from "@/components/DashboardChatsBox";
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -23,6 +22,23 @@ export default function DashboardPage() {
     const { allProperties = [] } = useContext(PropertyContext);
     const [confirmedModel, setConfirmedModal] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
+
+
+    // Enquiry
+    const [enquiries, setEnquiries] = useState([]);
+    const [showChat, setShowChat] = useState(false);
+    const [propID, setpropID] = useState("");
+    const [buyerID, setBuyerID] = useState("");
+
+
+    // profile edit modal simple state
+    const [editingProfile, setEditingProfile] = useState(false);
+    const [profileName, setProfileName] = useState(user?.fullName ?? "");
+    const [email, setEmail] = useState(user?.email ?? "");
+    const [phone, setPhone] = useState(user?.phone ?? "");
+    const [role, setRole] = useState(user?.role ?? "");
+    const [savingProfile, setSavingProfile] = useState(false);
+    const [seller, setseller] = useState({})
 
 
     useEffect(() => {
@@ -46,12 +62,6 @@ export default function DashboardPage() {
         if (!user) return [];
         return allProperties?.filter((p) => Number(p?.userId) === Number(user?.id));
     }, [allProperties, user]);
-
-    // Enquiry
-    const [enquiries, setEnquiries] = useState([]);
-    const [showChat, setShowChat] = useState(false);
-    const [propID, setpropID] = useState("");
-    const [buyerID, setBuyerID] = useState("");
 
 
     useEffect(() => {
@@ -93,22 +103,13 @@ export default function DashboardPage() {
                 (inq) => Number(inq.seller?.id) === Number(user?.id)
             );
 
-            console.log("Seller enquiries →", sellerEnquiries);
+            // console.log("Seller enquiries →", sellerEnquiries);
 
             setEnquiries(sellerEnquiries);
         } catch (err) {
             console.log("Error loading enquiries:", err);
         }
     }
-
-
-    // profile edit modal simple state
-    const [editingProfile, setEditingProfile] = useState(false);
-    const [profileName, setProfileName] = useState(user?.fullName ?? "");
-    const [email, setEmail] = useState(user?.email ?? "");
-    const [phone, setPhone] = useState(user?.phone ?? "");
-    const [role, setRole] = useState(user?.role ?? "");
-    const [savingProfile, setSavingProfile] = useState(false);
 
     useEffect(() => {
         feather.replace();
@@ -118,7 +119,7 @@ export default function DashboardPage() {
 
         setSavingProfile(true);
 
-        console.log(profileName, email, role)
+        // console.log(profileName, email, role)
         try {
             const query = `
                 mutation UpdateUser($id: Int!, $input: UpdateUserInput!) {
@@ -161,11 +162,10 @@ export default function DashboardPage() {
 
 
     const closeChat = () => {
-        document.querySelector('.chatOverlay').classList.add('closing');
-
+        document.querySelector('.chatOverlay2').classList.add('closingOverlay2');
         setTimeout(() => {
             setShowChat(false);
-        }, 500); // match animation duration
+        }, 600); // match animation duration
     };
 
     return (
@@ -285,39 +285,42 @@ export default function DashboardPage() {
                                             <p className="muted-sm">Leads will appear here when someone contacts you about a property.</p>
                                         </div>
                                     ) : (
-                                        enquiries.map((e) =>
-                                        (
-                                            <div key={e.id} className="enquiry">
-                                                <div className="enq-left">
-                                                    <div className="enq-sender">{e.buyer.fullName}</div>
-                                                    <div className="muted-sm">
-                                                        {e.messages.length > 0
-                                                            ? e.messages[e.messages.length - 1].message
-                                                            : "New enquiry started"}
+                                        enquiries.map((e) => {
+                                            // console.log(e)
+                                            return (
+                                                <div key={e.id} className="enquiry">
+                                                    <div className="enq-left">
+                                                        <div className="enq-sender">{e.buyer.fullName}</div>
+                                                        <div className="muted-sm">
+                                                            {e.messages.length > 0
+                                                                ? e.messages[e.messages.length - 1].message
+                                                                : "New enquiry started"}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="enq-actions">
+                                                        <button
+                                                            className="btn small"
+                                                            onClick={() => router.push(`/property/${e.property.id}`)}
+                                                        >
+                                                            View
+                                                        </button>
+
+                                                        <button
+                                                            className="btn small ghost"
+                                                            onClick={() => {
+                                                                setseller(e.seller?.id);
+                                                                setBuyerID(e.buyer)
+                                                                setpropID(e.property.id)
+                                                                setShowChat(true)
+                                                            }}
+                                                        >
+                                                            Reply
+                                                        </button>
                                                     </div>
                                                 </div>
-
-                                                <div className="enq-actions">
-                                                    <button
-                                                        className="btn small"
-                                                        onClick={() => router.push(`/property/${e.property.id}`)}
-                                                    >
-                                                        View
-                                                    </button>
-
-                                                    <button
-                                                        className="btn small ghost"
-                                                        onClick={() => {
-                                                            setBuyerID(e.buyer.id)
-                                                            setpropID(e.property.id)
-                                                            setShowChat(true)
-                                                        }}
-                                                    >
-                                                        Reply
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))
+                                            )
+                                        })
                                     )
                                 }
                             </div>
@@ -329,12 +332,12 @@ export default function DashboardPage() {
 
                 {
                     showChat &&
-                    <ChatsBox
+                    <DashboardChatsBox
                         showChat={showChat}
                         closeChat={closeChat}
-                        seller={user.id}
-                        propertyId={propID || ""}
-                        buyerId={buyerID || ""}
+                        seller={seller || {}}
+                        propertyId={Number(propID) || ""}
+                        buyerId={buyerID || {}}
                     />
                 }
 

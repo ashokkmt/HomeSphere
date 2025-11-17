@@ -1,15 +1,17 @@
 "use client";
 
 import axios from "axios";
-import "../styles/chatsBox.css";
+import "../styles/propertyChatsBox.css";
+import "../styles/commonChatBox.css";
 import React, { useEffect, useState } from "react";
 import { ArrowRight } from "react-feather";
 import { FailedToast } from "./utils/toast";
 
-function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
+function PropertyChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
   const [chat, setChat] = useState("");
   const [displayedChats, setDisplayedChats] = useState([]);
   const [inquiryId, setInquiryId] = useState(null);
+
 
   useEffect(() => {
     if (showChat) {
@@ -44,6 +46,8 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
         (inq) => inq?.buyer?.id === buyerId && inq?.property?.id === propertyId
       );
 
+      // console.log(existing);
+
       if (existing) {
         setInquiryId(existing.id);
         setDisplayedChats(existing.messages || []);
@@ -51,11 +55,10 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
         setInquiryId(null);
         setDisplayedChats([]);
       }
-
-      return existing?.id ?? null;
+      // return existing?.id ?? null;
     } catch (err) {
       setInquiryId(null);
-      return null;
+      // return null;
     }
   };
 
@@ -66,18 +69,13 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
     }
 
     try {
-      let eid = inquiryId;
 
-      if (!eid) {
-        eid = await loadExistingInquiry();
-      }
-
-      if (eid) {
+      if (inquiryId) {
         const mutation = `
           mutation SendInquiryMessage {
             sendInquiryMessage(
               input: {
-                inquiryId: ${eid},
+                inquiryId: ${inquiryId},
                 senderId: ${buyerId},
                 message: ${JSON.stringify(chat)}
               }
@@ -91,7 +89,7 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
 
         const getMsgsQuery = `
           query GetInquiryMessages {
-            getInquiryMessages(inquiryId: ${eid}) {
+            getInquiryMessages(inquiryId: ${inquiryId}) {
               id
               message
               sender { id fullName }
@@ -102,6 +100,7 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
           query: getMsgsQuery,
         });
 
+        // console.log(msgsRes?.data?.data?.getInquiryMessages);
         setDisplayedChats(msgsRes?.data?.data?.getInquiryMessages || []);
         setChat("");
         return;
@@ -117,8 +116,6 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
             }
           ) {
             id
-            status
-            createdAt
           }
         }`;
 
@@ -145,7 +142,9 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
 
       setDisplayedChats(msgsRes?.data?.data?.getInquiryMessages || []);
       setChat("");
-    } catch (err) { }
+    } catch (err) {
+      console.log("error here : " + err);
+    }
   };
 
   return (
@@ -156,28 +155,34 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
             <h4>Chat with {seller?.fullName || "Seller"}</h4>
             <p className="subText">Ask anything about this property.</p>
           </div>
-          <ArrowRight size={35} onClick={closeChat} className="closeBtn" />
+          <ArrowRight size={35} onClick={() => closeChat()} className="closeBtn" />
         </div>
 
         <div className="chatWrapper">
           <div className="chatBody">
-            {displayedChats.length === 0 ? (
-              <p className="chatText leftAlign">
-                Feel free to chat with {seller?.fullName || "Seller"}
-              </p>
-            ) : (
-              <>
-                {displayedChats.map((msg) => (
-                  <p
-                    key={msg.id}
-                    className={`chatText ${msg?.sender?.id === buyerId ? "leftAlign" : "rightAlign"
-                      }`}
-                  >
-                    {msg?.message}
-                  </p>
-                ))}
-              </>
-            )}
+            {
+              displayedChats.length === 0 ? (
+                <p className="chatText leftAlign">
+                  Feel free to chat with {seller?.fullName || "Seller"}
+                </p>
+              ) : (
+                <>
+                  {
+                    displayedChats.map((msg) => {
+                      // console.log(msg)
+                      return (
+                        <p
+                          key={msg.id}
+                          className={`chatText ${Number(msg?.sender?.id) === buyerId ? "leftAlign" : "rightAlign"}`}
+                        >
+                          {msg?.message}
+                        </p>
+                      )
+                    })
+                  }
+                </>
+              )
+            }
           </div>
 
           <div className="chatFooter">
@@ -198,4 +203,4 @@ function ChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) {
   );
 }
 
-export default ChatsBox;
+export default PropertyChatsBox;

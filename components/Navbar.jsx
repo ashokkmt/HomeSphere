@@ -116,24 +116,24 @@ export default function Navbar() {
                 href="/"
                 className="navLink Buy navLinkActive"
               >Buy</Link>
-              <Link onClick={(e) => {
+              {/* <Link onClick={(e) => {
                 changeTab("Rent", "navLink", "navLinkActive");
               }}
                 href="#"
                 className="navLink Rent"
-              >Rent</Link>
+              >Rent</Link> */}
               <Link onClick={(e) => {
                 changeTab("Properties", "navLink", "navLinkActive")
               }}
                 href="/property"
                 className="navLink Properties"
               >Properties</Link>
-              <Link onClick={(e) => {
+              {/* <Link onClick={(e) => {
                 changeTab("Agents", "navLink", "navLinkActive")
               }}
                 href="/agents"
                 className="navLink Agents"
-              >Agents</Link>
+              >Agents</Link> */}
             </div>
           </div>
           <div className="navRight">

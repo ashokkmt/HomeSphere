@@ -7,7 +7,6 @@ import { useContext, useEffect, useState } from 'react';
 import '../styles/homepage.css';
 import SearchBar from '../components/SearchBar';
 import Link from 'next/link';
-// import { useRouter } from 'next/navigation';
 import PropertyCard from '../components/PropertyCard';
 import LocalityCard from '../components/LocalityCard';
 import Testimonials from '../components/Testimonials';
@@ -15,7 +14,6 @@ import { PropertyContext } from './propertyContext.jsx'
 import { FavouriteContext } from '@/app/FavouriteContext';
 
 export default function NestQuest() {
-  // const router = useRouter();
   const { allProperties } = useContext(PropertyContext);
   const { favorites, refreshFav } = useContext(FavouriteContext);
   const [confirmedModel, setConfirmedModal] = useState(false);
@@ -142,8 +140,8 @@ export default function NestQuest() {
                 Join thousands of happy homeowners who found their perfect property with NestQuest.
               </p>
               <div className="ctaButtons">
-                <Link href="#" className="ctaButtonPrimary">Browse Properties</Link>
-                <Link href="#" className="ctaButtonSecondary">Contact Agent</Link>
+                <Link href="/property" className="ctaButtonPrimary">Browse Properties</Link>
+                <Link href="/property" className="ctaButtonSecondary">Contact Seller</Link>
               </div>
             </div>
             <div className="ctaImage">

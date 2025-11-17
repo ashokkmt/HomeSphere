@@ -3,7 +3,7 @@
 import Navbar from "../../../components/Navbar.jsx";
 import Footer from "../../../components/Footer";
 import Head from 'next/head';
-import { ArrowLeft, ArrowRight, Calendar, Camera, ChevronLeft, ChevronRight, Compass, Droplet, Heart, Home, Layers, MapPin, MessageSquare, Share2, Square, X } from 'react-feather';
+import { Calendar, Camera, ChevronLeft, ChevronRight, Compass, Droplet, Heart, Home, Layers, MapPin, MessageSquare, Share2, Square } from 'react-feather';
 import '../../../styles/property.id.css';
 import feather from 'feather-icons'
 import { useContext, useEffect, useRef, useState } from 'react';
@@ -15,7 +15,7 @@ import { MapIcons } from "@/components/utils/iconMap.js";
 import { useAuth } from "@/app/UserContext.jsx";
 import { FavouriteContext } from "@/app/FavouriteContext.jsx";
 import { FailedToast, SuccessToast } from "@/components/utils/toast.js";
-import ChatsBox from "@/components/ChatsBox.jsx";
+import PropertyChatsBox from "@/components/PropertyChatsBox.jsx";
 
 
 function PropertyDetail() {
@@ -97,7 +97,7 @@ function PropertyDetail() {
 
 
           if (agentDetail.data?.errors) {
-            console.error(agentDetail.data.errors);
+            // console.error(agentDetail.data.errors);
             return;
           }
 
@@ -169,7 +169,7 @@ function PropertyDetail() {
       return;
     }
 
-    console.log(userID, propId)
+    // console.log(userID, propId)
 
     try {
       const query = `
@@ -183,9 +183,9 @@ function PropertyDetail() {
       const res = await axios.post("http://localhost:3000/api/graphql", { query, variables: { userId: Number(userID), propertyId: Number(propId) } });
       if (res.data.errors) {
         FailedToast("Some Error Occurs");
-        console.error("GraphQL errors:", JSON.stringify(res.data.errors, null, 2));
+        // console.error("GraphQL errors:", JSON.stringify(res.data.errors, null, 2));
       } else {
-        console.log("GraphQL data:", res.data.data);
+        // console.log("GraphQL data:", res.data.data);
         SuccessToast("Added To Favorites");
       }
 
@@ -212,7 +212,7 @@ function PropertyDetail() {
       const res = await axios.post("http://localhost:3000/api/graphql", { query });
 
       if (res.data.errors) {
-        console.error(res.data.errors);
+        // console.error(res.data.errors);
         FailedToast("Some Error Occurs");
       }
 
@@ -225,11 +225,10 @@ function PropertyDetail() {
 
 
   const closeChat = () => {
-    document.querySelector('.chatOverlay').classList.add('closing');
-
+    document.querySelector('.chatOverlay').classList.add('closingOverlay');
     setTimeout(() => {
       setShowChat(false);
-    }, 500); // match animation duration
+    }, 600);
   };
 
 
@@ -324,13 +323,8 @@ function PropertyDetail() {
                     <div className="pq-stars">
                       {
                         currproperty?.listingStatus
-                        // [...Array(5)].map((_, i) => (
-                        //   <i key={i} data-feather="star" fill={i < 3 ? 'currentColor' : 'none'} stroke="currentColor">
-                        //   </i>
-                        // ))
                       }
                     </div>
-                    {/* <span className="pq-review-text">4.2 (12 Reviews)</span> */}
                   </div>
                 </div>
 
@@ -358,7 +352,10 @@ function PropertyDetail() {
                         const MapValue = MapIcons[key] || MapIcons.default;
                         return (
                           <>
-                            <div className="pq-amenity"><MapValue.icon size={MapValue.size} /> <span>{amenity?.amenity?.name}</span></div>
+                            <div className="pq-amenity">
+                              <MapValue.icon size={MapValue.size} />
+                              <span>{amenity?.amenity?.name}</span>
+                            </div>
                           </>
                         )
                       })
@@ -423,10 +420,9 @@ function PropertyDetail() {
             </div>
           </section>
         </main>
-
         {
           showChat && (
-            <ChatsBox
+            <PropertyChatsBox
               showChat={showChat}
               closeChat={closeChat}
               seller={seller}
