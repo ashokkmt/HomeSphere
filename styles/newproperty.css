@@ -98,6 +98,10 @@ textarea {
     outline: none;
 }
 
+input.red {
+    outline: 2px solid red;
+}
+
 textarea {
     min-height: 92px;
     resize: vertical;

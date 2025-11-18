@@ -8,6 +8,7 @@ import { Check, X } from "react-feather";
 import { useAuth } from "@/app/UserContext";
 import { PropertyContext } from "@/app/propertyContext";
 import { FailedToast, SuccessToast } from "@/components/utils/toast";
+import { validate } from "graphql";
 
 export default function NewProperty() {
 
@@ -150,8 +151,24 @@ export default function NewProperty() {
     e.preventDefault();
 
     // ✅ Step 1: Frontend validation
-    const errors = {};
-    if (images.length === 0) alert("At least one image is required.");
+    if (images.length === 0) {
+      FailedToast("At least one image is required");
+      return;
+    }
+    if (bedrooms < 0 || bathrooms < 0 || areaSqft < 0) {
+      FailedToast("Values Can't be Negative");
+      setBathrooms("");
+      setBedrooms("")
+      setAreaSqft("")
+      return;
+    }
+
+    if (postlcode < 0 || postlcode.length !== 6) {
+      FailedToast("Invalid PostalCode");
+      setPostlcode("");
+      return;
+    }
+
 
     setLoading(true);
 
@@ -234,6 +251,9 @@ export default function NewProperty() {
       setBathrooms("");
       setAreaSqft("");
       setListingStatus("");
+      setBathrooms("");
+      setBedrooms("")
+      setAreaSqft("")
       setStreet("");
       setCity("");
       setStateVal("");
@@ -408,9 +428,11 @@ export default function NewProperty() {
               <div className="form-group">
                 <label htmlFor="price">Price</label>
                 <input
+                  className={`${Number(price) < 0 ? "red" : ""}`}
                   id="price"
                   name="price"
                   type="number"
+                  min={0}
                   placeholder="Price in ₹"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
@@ -436,9 +458,11 @@ export default function NewProperty() {
               <div className="form-group">
                 <label htmlFor="bedrooms">Bedrooms</label>
                 <input
+                  className={`${Number(bedrooms) < 0 ? "red" : ""}`}
                   id="bedrooms"
                   name="bedrooms"
                   type="number"
+                  min={0}
                   placeholder="e.g. 3"
                   value={bedrooms}
                   onChange={(e) => setBedrooms(e.target.value)}
@@ -448,9 +472,11 @@ export default function NewProperty() {
               <div className="form-group">
                 <label htmlFor="bathrooms">Bathrooms</label>
                 <input
+                  className={`${Number(bathrooms) < 0 ? "red" : ""}`}
                   id="bathrooms"
                   name="bathrooms"
                   type="number"
+                  min={0}
                   placeholder="e.g. 2"
                   value={bathrooms}
                   onChange={(e) => setBathrooms(e.target.value)}
@@ -462,9 +488,11 @@ export default function NewProperty() {
               <div className="form-group">
                 <label htmlFor="areaSqft">Area (sqft)</label>
                 <input
+                  className={`${Number(areaSqft) < 0 ? "red" : ""}`}
                   id="areaSqft"
                   name="areaSqft"
                   type="number"
+                  min={0}
                   placeholder="e.g. 1200"
                   value={areaSqft}
                   onChange={(e) => setAreaSqft(e.target.value)}
@@ -531,9 +559,12 @@ export default function NewProperty() {
               <div className="form-group">
                 <label htmlFor="postalcode">Postal Code</label>
                 <input
+                  className={`${Number(postlcode) < 0 ? "red" : ""}`}
                   id="postalcode"
                   name="postalcode"
                   type="number"
+                  min={0}
+                  maxLength={6}
                   placeholder="Postal Code"
                   value={postlcode}
                   onChange={(e) => setPostlcode(e.target.value)}

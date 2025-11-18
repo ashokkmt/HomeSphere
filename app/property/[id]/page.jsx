@@ -16,6 +16,7 @@ import { useAuth } from "@/app/UserContext.jsx";
 import { FavouriteContext } from "@/app/FavouriteContext.jsx";
 import { FailedToast, SuccessToast } from "@/components/utils/toast.js";
 import PropertyChatsBox from "@/components/PropertyChatsBox.jsx";
+import { SourceJSON } from "three";
 
 
 function PropertyDetail() {
@@ -234,7 +235,7 @@ function PropertyDetail() {
 
 
   function gotToSearchProperties(city) {
-    console.log(city)
+    // console.log(city)
     router.push(`/property?city=${city}`);
   }
 
@@ -297,7 +298,7 @@ function PropertyDetail() {
               <div className="pq-property-gallery" ref={slideImage}>
 
                 {
-                  currproperty?.images?.map((img, index) => {
+                  currproperty?.images?.map((img) => {
                     return (
                       <img key={img?.id} src={img?.url} alt={img?.altText} />
                     )
@@ -334,34 +335,37 @@ function PropertyDetail() {
                   <div className="pq-features-grid">
                     <div className="pq-feature"><Home /> {currproperty?.bedrooms} Bedrooms</div>
                     <div className="pq-feature"><Droplet /> {currproperty?.bathrooms} Bathrooms</div>
-                    <div className="pq-feature"><Square /> {parseInt(currproperty?.price / currproperty?.areaSqft)} sq.ft Built-up</div>
+                    {/* <div className="pq-feature"><Square /> {parseInt(currproperty?.price / currproperty?.areaSqft)} sq.ft Built-up</div> */}
                     <div className="pq-feature"><Calendar /> {currproperty?.listingStatus}</div>
-
-                    {/* Yaha Compass aur Layers wale mai kya dalna hai dekh lena ye DB mai nhi hai ok */}
                     <div className="pq-feature"><Compass /> North-East Facing</div>
-                    <div className="pq-feature"><Layers /> 3rd Floor (of 4)</div>
                   </div>
                 </div>
 
                 <div className="pq-section">
                   <h3>Amenities</h3>
-                  <div className="pq-amenities-grid">
-                    {
-                      currproperty?.amenities?.map((amenity) => {
-                        const name = amenity?.amenity?.name || "";
-                        const key = name.replace(/[\s_-]/g, '').toLowerCase();
-                        const MapValue = MapIcons[key] || MapIcons.default;
-                        return (
-                          <>
-                            <div className="pq-amenity">
-                              <MapValue.icon size={MapValue.size} />
-                              <span>{amenity?.amenity?.name}</span>
-                            </div>
-                          </>
-                        )
-                      })
-                    }
-                  </div>
+                  {
+                    currproperty?.amenities?.length <= 0 ?
+                      (
+                        <p>No Amenities Added Yet.</p>
+                      ) :
+                      (
+                        <div className="pq-amenities-grid">
+                          {
+                            currproperty?.amenities?.map((amenity) => {
+                              const name = amenity?.amenity?.name || "";
+                              const key = name.replace(/[\s_-]/g, '').toLowerCase();
+                              const MapValue = MapIcons[key] || MapIcons.default;
+                              return (
+                                <div key={amenity?.amenity?.id} className="pq-amenity">
+                                  <MapValue.icon size={MapValue.size} />
+                                  <span>{name}</span>
+                                </div>
+                              )
+                            })
+                          }
+                        </div>
+                      )
+                  }
                 </div>
 
 

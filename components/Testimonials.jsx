@@ -1,8 +1,8 @@
 import '../styles/Testimonials.css'
 
-function Testimonials({ testimonial, key }) {
+function Testimonials({ testimonial }) {
     return (
-        <div key={key} className="testimonialCard">
+        <div className="testimonialCard">
             <div className="testimonialHeader">
                 <img src={testimonial.image} alt={testimonial.name} className="testimonialAvatar" />
                 <div>

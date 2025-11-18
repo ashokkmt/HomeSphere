@@ -1,8 +1,8 @@
 import '../styles/locality.css'
 
-function LocalityCard({ locality, key }) {
+function LocalityCard({ locality }) {
     return (
-        <div key={key} className="localityCard">
+        <div className="localityCard">
             <div className="localityImageWrapper">
                 <img src={locality.image} alt={locality.name} className="localityImage" />
                 <div className="localityOverlay"></div>

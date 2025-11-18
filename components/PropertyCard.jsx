@@ -12,7 +12,6 @@ import { FailedToast, SuccessToast } from './utils/toast';
 
 
 export default function PropertyCard({
-  key,
   property,
   favorites,
   refreshFav,
@@ -166,7 +165,7 @@ export default function PropertyCard({
   return (
 
     <>
-      <div key={key} className="propertyCard">
+      <div className="propertyCard">
         <div className="propertyImageWrapper">
           <img src={property.images[0].url} alt={property.images[0].altText} className="propertyImage" />
           {/* {property.featured && (

@@ -71,7 +71,9 @@ export default function NestQuest() {
           <div className="heroContent">
             <h1 className="heroTitle">Find Your Perfect Home</h1>
             <p className="heroSubtitle">Discover thousands of properties for sale and rent across the country</p>
-            <SearchBar />
+            <SearchBar
+              allProperties={allProperties}
+            />
           </div>
         </div>
 

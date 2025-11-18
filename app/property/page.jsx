@@ -31,17 +31,28 @@ function PropertyList() {
 
     const filteredProperties = useMemo(() => {
         const q = query.trim().toLowerCase();
+
         if (!q) return allProperties;
+
+        const qNoSpace = q.replace(/[,\s]/g, "");
+
         return allProperties.filter((p) => {
-            const cityLoc = p.address.city;
-            const stateLoc = p.address.state;
-            return (
-                (p?.title && p.title.toLowerCase().includes(q)) ||
-                (p?.address?.city && cityLoc.toLowerCase().includes(q)) ||
-                (p?.address?.state && stateLoc.toLowerCase().includes(q))  // agent ka name ayega yaha pe ok.... p.agentName.tolowerCase().includes(q) krke ok
-            );
+            const city = p?.address?.city?.toLowerCase() || "";
+            const state = p?.address?.state?.toLowerCase() || "";
+
+            const fullLocation = `${city} ${state}`;
+            const fullNoSpace = fullLocation.replace(/[,\s]/g, "");
+
+            const matchesNormal =
+                city.includes(q) ||
+                state.includes(q) ||
+                fullLocation.includes(q);
+
+            const matchesNoSpace = fullNoSpace.includes(qNoSpace);
+
+            return matchesNormal || matchesNoSpace;
         });
-    }, [startsearch, query === ""]);
+    }, [startsearch, query, allProperties]);
 
     return (
         <>
