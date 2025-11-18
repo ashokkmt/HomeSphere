@@ -50,6 +50,7 @@ function PropertyDetail() {
               createdAt
               updatedAt
               images {
+                  id
                   propertyId
                   url
                   altText
@@ -298,7 +299,7 @@ function PropertyDetail() {
                 {
                   currproperty?.images?.map((img, index) => {
                     return (
-                      <img src={img?.url} alt={img?.altText} />
+                      <img key={img?.id} src={img?.url} alt={img?.altText} />
                     )
                   })
                 }
@@ -411,7 +412,7 @@ function PropertyDetail() {
                   if (index >= 3) return;
                   return (
                     <PropertyCard
-                      index={index}
+                      key={property?.id}
                       property={property}
                     />
                   )

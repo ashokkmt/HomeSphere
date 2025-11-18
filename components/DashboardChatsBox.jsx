@@ -15,11 +15,19 @@ function DashboardChatsBox({ showChat, closeChat, seller, buyerId, propertyId })
 
 
     useEffect(() => {
+        let intervalId;
         if (showChat) {
             loadExistingInquiry();
+
+            intervalId = setInterval(() => {
+                loadExistingInquiry();
+            }, 2000);
+        }
+
+        return () => {
+            if (intervalId) clearInterval(intervalId);
         }
     }, [showChat, buyerId?.id, propertyId]);
-
 
 
     useEffect(() => {

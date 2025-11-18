@@ -25,25 +25,28 @@ export default function NestQuest() {
 
 
   const localities = [
-    { name: 'Bandra West', avgPrice: '₹25,000/sq.ft', properties: '248+', image: 'http://static.photos/cityscape/640x360/1' },
-    { name: 'Whitefield', avgPrice: '₹8,500/sq.ft', properties: '312+', image: 'http://static.photos/cityscape/640x360/2' },
-    { name: 'Gurgaon Sector 56', avgPrice: '₹11,200/sq.ft', properties: '189+', image: 'http://static.photos/cityscape/640x360/3' }
+    { id: 1, name: 'Bandra West', avgPrice: '₹25,000/sq.ft', properties: '248+', image: 'http://static.photos/cityscape/640x360/1' },
+    { id: 2, name: 'Whitefield', avgPrice: '₹8,500/sq.ft', properties: '312+', image: 'http://static.photos/cityscape/640x360/2' },
+    { id: 3, name: 'Gurgaon Sector 56', avgPrice: '₹11,200/sq.ft', properties: '189+', image: 'http://static.photos/cityscape/640x360/3' }
   ];
 
   const testimonials = [
     {
+      id: 1,
       name: 'Rahul Sharma',
       rating: 4,
       text: 'Found my dream home through NestQuest. The process was smooth and the team was very professional. Highly recommended!',
       image: 'http://static.photos/people/200x200/5'
     },
     {
+      id: 2,
       name: 'Priya Patel',
       rating: 5,
       text: 'As a first-time home buyer, I was nervous about the process. NestQuest made it so easy with their transparent pricing and great support.',
       image: 'http://static.photos/people/200x200/6'
     },
     {
+      id: 3,
       name: 'Amit Joshi',
       rating: 4,
       text: 'Excellent service! The property recommendations were spot on based on my preferences. Will definitely use NestQuest again.',
@@ -84,7 +87,7 @@ export default function NestQuest() {
                 if (index >= 3) return;
                 return (
                   <PropertyCard
-                    index={index}
+                    key={property?.id}
                     property={property}
                     favorites={favorites}
                     refreshFav={refreshFav}
@@ -105,12 +108,15 @@ export default function NestQuest() {
             <h2 className="sectionTitle">Popular Localities</h2>
             <div className="localityGrid">
               {
-                localities.map((locality, index) => (
-                  <LocalityCard
-                    index={index}
-                    locality={locality}
-                  />
-                ))
+                localities.map((locality, index) => {
+                  if (index >= 3) return
+                  return (
+                    <LocalityCard
+                      key={locality?.id}
+                      locality={locality}
+                    />
+                  )
+                })
               }
             </div>
           </div>
@@ -121,12 +127,15 @@ export default function NestQuest() {
           <h2 className="sectionTitleCenter">What Our Customers Say</h2>
           <div className="testimonialGrid">
             {
-              testimonials.map((testimonial, index) => (
-                <Testimonials
-                  testimonial={testimonial}
-                  index={index}
-                />
-              ))
+              testimonials.map((testimonial, index) => {
+                if (index >= 3) return
+                return (
+                  <Testimonials
+                    key={testimonial?.id}
+                    testimonial={testimonial}
+                  />
+                )
+              })
             }
           </div>
         </div>

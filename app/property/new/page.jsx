@@ -599,6 +599,7 @@ export default function NewProperty() {
                   allAmenities?.map((amenity) => {
                     return (
                       <p
+                        key={amenity?.id}
                         tabIndex={0}
                         role="button"
                         onClick={(e) => toggleAmenity(amenity?.id)}

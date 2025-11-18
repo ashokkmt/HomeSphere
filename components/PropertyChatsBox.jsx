@@ -14,10 +14,20 @@ function PropertyChatsBox({ showChat, closeChat, seller, buyerId, propertyId }) 
 
 
   useEffect(() => {
+    let intervalId;
     if (showChat) {
       loadExistingInquiry();
+
+      intervalId = setInterval(() => {
+        loadExistingInquiry();
+      }, 2000);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
     }
   }, [showChat, buyerId, propertyId]);
+  
 
   const loadExistingInquiry = async () => {
     try {

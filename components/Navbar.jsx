@@ -10,6 +10,7 @@ import { ChevronDown } from "react-feather";
 // import { useAuth } from "../app/UserContext";
 import feather from 'feather-icons';
 import { useAuth } from "@/app/UserContext";
+import { SuccessToast } from "./utils/toast";
 
 export default function Navbar() {
 
@@ -18,7 +19,7 @@ export default function Navbar() {
   const router = useRouter();
   const [isAuth, setIsAuth] = useState(false);
   const [showUserDrop, setshowUserDrop] = useState(false);
-  const { user, setUser } = useAuth();
+  const { user, setUser, refreshUser } = useAuth();
   const dropdownRef = useRef();
 
 
@@ -51,9 +52,9 @@ export default function Navbar() {
 
     switch (pathname) {
       case "/": tabName = "Buy"; break;
-      case "/rent": tabName = "Rent"; break;
+      // case "/rent": tabName = "Rent"; break;
       case "/property": tabName = "Properties"; break;
-      case "/agents": tabName = "Agents"; break;
+      // case "/agents": tabName = "Agents"; break;
     }
     if (tabName) changeTab(tabName, "navLink", "navLinkActive");
 
@@ -72,6 +73,9 @@ export default function Navbar() {
 
 
   const logoutuser = async () => {
+
+    setshowUserDrop(false);
+
     try {
       const res = await fetch("http://localhost:3000/api/auth/logout",
         { method: "POST", credentials: "include" }
@@ -79,9 +83,9 @@ export default function Navbar() {
       if (res.ok) {
         console.log(res);
         setUser(null);
-        window.location.href = "/";
-        // refreshUser();
-        // router.push("/");
+        refreshUser();
+        SuccessToast("Log Out Successfully")
+        router.push("/");
       }
     } catch (error) {
       console.log(error + " this error is here")
@@ -105,7 +109,7 @@ export default function Navbar() {
       <div className="navContainer">
         <div className="navContent">
           <div className="navLeft">
-            <div onClick={()=> router.push('/')} className="logo">
+            <div onClick={() => router.push('/')} className="logo">
               <i data-feather="home" className="logoIcon" ></i>
               <span className="logoText">HomeSphere</span>
             </div>

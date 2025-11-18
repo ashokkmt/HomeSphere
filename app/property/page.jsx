@@ -87,19 +87,21 @@ function PropertyList() {
                         filteredProperties?.length === 0 ? (
                             <p style={{ padding: 20, color: "#6b7280" }}>No properties match your search.</p>
                         ) : (
-                            filteredProperties?.map((property, index) => (
-                                <PropertyCard
-                                    index={index}
-                                    property={property}
-                                    favorites={favorites}
-                                    setfavorites={setfavorites}
-                                    refreshFav={refreshFav}
-                                    confirmDelete={confirmDelete}
-                                    setConfirmDelete={setConfirmDelete}
-                                    confirmedModel={confirmedModel}
-                                    setConfirmedModal={setConfirmedModal}
-                                />
-                            ))
+                            filteredProperties?.map((property) => {
+                                return (
+                                    <PropertyCard
+                                        key={property?.id}
+                                        property={property}
+                                        favorites={favorites}
+                                        setfavorites={setfavorites}
+                                        refreshFav={refreshFav}
+                                        confirmDelete={confirmDelete}
+                                        setConfirmDelete={setConfirmDelete}
+                                        confirmedModel={confirmedModel}
+                                        setConfirmedModal={setConfirmedModal}
+                                    />
+                                )
+                            })
                         )
                     }
                 </div>
